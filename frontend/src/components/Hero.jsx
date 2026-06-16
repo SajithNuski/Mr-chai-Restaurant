@@ -34,6 +34,18 @@ export default function Hero() {
 
   return (
     <section id="home" className="hero-sec">
+      <div className="hero-video-bg">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="hero-video-element"
+        >
+          <source src="/hero_video.mp4" type="video/mp4" />
+        </video>
+        <div className="hero-video-overlay"></div>
+      </div>
       <div className="container">
         <div className="hero-grid">
           
@@ -80,37 +92,6 @@ export default function Hero() {
                 className="hero-img"
               />
             </div>
-
-            {/* Floating Card 1 */}
-            <motion.div 
-              className="hero-floating-card hero-fc-1"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            >
-              <div className="hero-fc-icon">
-                <Coffee size={20} />
-              </div>
-              <div className="hero-fc-text">
-                <h4>Obsidian Blend</h4>
-                <p>100% Organic Assam</p>
-              </div>
-            </motion.div>
-
-            {/* Floating Card 2 */}
-            <motion.div 
-              className="hero-floating-card hero-fc-2"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 }}
-            >
-              <div className="hero-fc-icon" style={{ backgroundColor: 'rgba(255, 215, 0, 0.15)', color: 'var(--gold-vibrant)' }}>
-                <Star size={20} />
-              </div>
-              <div className="hero-fc-text">
-                <h4>4.9 Rating</h4>
-                <p>From 800+ Guest Reviews</p>
-              </div>
-            </motion.div>
-
           </motion.div>
 
         </div>

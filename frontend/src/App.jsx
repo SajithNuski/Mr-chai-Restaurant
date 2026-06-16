@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import SpiceAlchemist from './components/SpiceAlchemist';
 import Featured from './components/Featured';
 import Locations from './components/Locations';
 import Reviews from './components/Reviews';
@@ -100,6 +101,7 @@ function App() {
             transition={{ duration: 0.4 }}
           >
             <Hero />
+            <SpiceAlchemist />
             <Featured />
             <Locations />
             <Reviews />

@@ -3,31 +3,41 @@
    ---------------------------------------------------- */
 
 :root {
-  /* Colors */
-  --bg-obsidian: #0A0A0A;
-  --bg-charcoal: #121212;
-  --bg-dim: #14130F;
-  --gold-heritage: #D4A017;
-  --gold-vibrant: #FFD700;
-  --text-parchment: #F5F0E8;
-  --text-muted: #c4c7c7;
+  /* Spiced Chai Design System Tokens */
+  --color-clay-ebony: #100A09;
+  --color-spiced-clay: #1A1210;
+  --color-saffron: #DE6E31;
+  --color-brass: #D4AF37;
+  --color-cardamom: #5C7C64;
+  --color-cream-malai: #FDFBF7;
+  --color-parchment-gray: #C5BEB9;
+  
+  /* Legacy Map for Compatibility */
+  --bg-obsidian: var(--color-clay-ebony);
+  --bg-charcoal: var(--color-spiced-clay);
+  --bg-dim: #150E0C;
+  --gold-heritage: var(--color-brass);
+  --gold-vibrant: var(--color-saffron);
+  --text-parchment: var(--color-cream-malai);
+  --text-muted: var(--color-parchment-gray);
   --error: #ffb4ab;
   --error-bg: #93000a;
   
   /* Fonts */
-  --font-headline: 'Playfair Display', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-headline: 'Prata', Georgia, serif;
+  --font-body: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-utility: 'Space Mono', monospace;
   
   /* Layout Metrics */
   --container-max: 1280px;
-  --gutter: 24px;
-  --section-gap: 120px;
+  --gutter: 32px;
+  --section-gap: 140px;
   
   /* Borders & Radius */
-  --radius-soft: 4px;
-  --border-gold-low: 1px solid rgba(212, 160, 23, 0.15);
-  --border-gold-mid: 1px solid rgba(212, 160, 23, 0.4);
-  --border-gold-high: 1px solid rgba(212, 160, 23, 1.0);
+  --radius-soft: 8px;
+  --border-gold-low: 1px solid rgba(212, 175, 55, 0.12);
+  --border-gold-mid: 1px solid rgba(212, 175, 55, 0.3);
+  --border-gold-high: 1px solid rgba(212, 175, 55, 0.8);
 }
 
 /* Base Styles */
@@ -268,9 +278,44 @@ p {
   display: flex;
   align-items: center;
   position: relative;
-  background: radial-gradient(circle at 80% 20%, rgba(212, 160, 23, 0.05) 0%, transparent 50%),
-              radial-gradient(circle at 10% 80%, rgba(18, 18, 18, 1) 0%, rgba(10, 10, 10, 1) 100%);
+  background-color: var(--color-clay-ebony);
   padding-top: 100px;
+  overflow: hidden;
+}
+
+.hero-video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.hero-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(16, 10, 9, 0.85) 0%,
+    rgba(16, 10, 9, 0.65) 50%,
+    rgba(16, 10, 9, 0.88) 100%
+  );
+}
+
+.hero-sec .container {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-grid {
@@ -1293,6 +1338,206 @@ textarea.form-control {
   color: var(--text-muted);
 }
 
+/* Spice Alchemist Section */
+.spice-alchemist-sec {
+  background-color: var(--color-clay-ebony);
+  border-top: var(--border-gold-low);
+  border-bottom: var(--border-gold-low);
+  padding: var(--section-gap) 0;
+  position: relative;
+}
+
+.alchemist-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.alchemist-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.alchemist-eyebrow {
+  font-family: var(--font-utility);
+  font-size: 12px;
+  color: var(--color-saffron);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.alchemist-title {
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-family: var(--font-headline);
+  line-height: 1.1;
+  color: var(--color-cream-malai);
+}
+
+.alchemist-subtitle {
+  color: var(--color-parchment-gray);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.slider-group {
+  margin-top: 12px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.slider-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-cream-malai);
+}
+
+.slider-icon {
+  flex-shrink: 0;
+}
+
+.slider-value {
+  font-size: 14px;
+  color: var(--color-parchment-gray);
+}
+
+/* Custom Styled Range Input */
+.spice-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  background: rgba(253, 251, 247, 0.1);
+  transition: all 0.3s ease;
+}
+
+.spice-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.spice-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+
+.slider-cardamom::-webkit-slider-thumb {
+  background: var(--color-cardamom);
+  box-shadow: 0 0 10px rgba(92, 124, 100, 0.5);
+}
+
+.slider-saffron::-webkit-slider-thumb {
+  background: var(--color-brass);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+.slider-ginger::-webkit-slider-thumb {
+  background: var(--color-saffron);
+  box-shadow: 0 0 10px rgba(222, 110, 49, 0.5);
+}
+
+/* Visual Display side */
+.alchemist-display {
+  background: var(--color-spiced-clay);
+  border: var(--border-gold-low);
+  border-radius: var(--radius-soft);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.alchemist-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-brass), transparent);
+}
+
+.tea-cup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.alchemist-display-right {
+  width: 100%;
+}
+
+.alchemist-assessment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.assessment-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-family: var(--font-utility);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.assessment-desc {
+  color: var(--color-parchment-gray);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.assessment-pairing {
+  border-top: 1px solid rgba(253, 251, 247, 0.08);
+  padding-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pairing-label {
+  font-family: var(--font-utility);
+  font-size: 10px;
+  color: var(--color-parchment-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.pairing-value {
+  font-family: var(--font-headline);
+  font-size: 16px;
+  color: var(--color-cream-malai);
+}
+
 /* ====================================================
    RESPONSIVE MEDIA QUERIES
    ==================================================== */
@@ -1300,6 +1545,11 @@ textarea.form-control {
 @media (max-width: 1024px) {
   :root {
     --section-gap: 80px;
+  }
+  
+  .alchemist-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
   }
   
   .hero-grid {
