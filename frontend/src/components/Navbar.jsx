@@ -31,16 +31,16 @@ export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
                 <a href="#home" className={activeSection === 'home' ? 'active' : ''}>Home</a>
               </li>
               <li>
-                <a href="#featured" className={activeSection === 'featured' ? 'active' : ''}>Featured</a>
+                <a href="#menu" className={activeSection === 'menu' ? 'active' : ''}>Menu</a>
               </li>
               <li>
-                <a href="#locations" className={activeSection === 'locations' ? 'active' : ''}>Locations</a>
+                <a href="#gallery" className={activeSection === 'gallery' ? 'active' : ''}>Gallery</a>
               </li>
               <li>
                 <a href="#reviews" className={activeSection === 'reviews' ? 'active' : ''}>Reviews</a>
               </li>
               <li>
-                <a href="#contact" className={activeSection === 'contact' ? 'active' : ''}>Contact</a>
+                <a href="#contact" className={activeSection === 'contact' ? 'active' : ''}>Contact Us</a>
               </li>
             </ul>
 

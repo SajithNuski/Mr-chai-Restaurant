@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import SpiceAlchemist from './components/SpiceAlchemist';
-import Featured from './components/Featured';
-import Locations from './components/Locations';
+import Menu from './components/Menu';
+import Gallery from './components/Gallery';
 import Reviews from './components/Reviews';
 import Contact from './components/Contact';
 import AdminLogin from './components/AdminLogin';
@@ -45,7 +44,7 @@ function App() {
   useEffect(() => {
     if (isAdminView) return;
 
-    const sections = ['home', 'featured', 'locations', 'reviews', 'contact'];
+    const sections = ['home', 'menu', 'gallery', 'reviews', 'contact'];
     const handleScroll = () => {
       const scrollPos = window.scrollY + 200;
       for (const section of sections) {
@@ -101,9 +100,8 @@ function App() {
             transition={{ duration: 0.4 }}
           >
             <Hero />
-            <SpiceAlchemist />
-            <Featured />
-            <Locations />
+            <Menu />
+            <Gallery />
             <Reviews />
             <Contact />
 
@@ -124,19 +122,19 @@ function App() {
                     <h4>Navigate</h4>
                     <ul className="footer-links">
                       <li><a href="#home">Home</a></li>
-                      <li><a href="#featured">Featured Menu</a></li>
-                      <li><a href="#locations">Sanctuaries</a></li>
-                      <li><a href="#reviews">Guest Word</a></li>
-                      <li><a href="#contact">Contact</a></li>
+                      <li><a href="#menu">Menu</a></li>
+                      <li><a href="#gallery">Gallery</a></li>
+                      <li><a href="#reviews">Reviews</a></li>
+                      <li><a href="#contact">Contact Us</a></li>
                     </ul>
                   </div>
 
                   <div className="footer-col">
-                    <h4>Sanctuaries</h4>
-                    <ul className="footer-links">
-                      <li><a href="#locations">Soho Central</a></li>
-                      <li><a href="#locations">Shoreditch Loft</a></li>
-                      <li><a href="#locations">Mayfair Elite</a></li>
+                    <h4>Hours</h4>
+                    <ul className="footer-links" style={{ color: 'var(--text-muted)', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <li>Mon - Thu: 11:00 AM - 10:00 PM</li>
+                      <li>Fri - Sat: 11:00 AM - 11:00 PM</li>
+                      <li>Sunday: 12:00 PM - 9:00 PM</li>
                     </ul>
                   </div>
 

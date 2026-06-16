@@ -61,8 +61,8 @@ export default function Hero() {
             </motion.div>
 
             <motion.h1 className="hero-title" variants={itemVariants}>
-              Bold Flavors.<br />
-              <span className="gold-text-gradient">Fast Life.</span>
+              CAFFE and<br />
+              <span className="gold-text-gradient">RESTAURANT.</span>
             </motion.h1>
 
             <motion.p className="hero-description" variants={itemVariants}>
@@ -73,9 +73,7 @@ export default function Hero() {
               <a href="#featured" className="btn btn-primary">
                 Explore Menu
               </a>
-              <a href="#contact" className="btn btn-secondary">
-                Book a Table
-              </a>
+
             </motion.div>
           </motion.div>
 
