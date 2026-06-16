@@ -1,9 +1,13 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Flame, Star, Coffee } from 'lucide-react';
 import hero_burger from '../assets/hero_burger.png';
 
 export default function Hero() {
+  const { scrollY } = useScroll();
+  // Map scrollY values from 0 to 1500px to rotation degrees from 0 to 360
+  const rotate = useTransform(scrollY, [0, 1500], [0, 360]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -70,7 +74,7 @@ export default function Hero() {
             </motion.p>
 
             <motion.div className="hero-buttons" variants={itemVariants}>
-              <a href="#featured" className="btn btn-primary">
+              <a href="#menu" className="btn btn-primary">
                 Explore Menu
               </a>
 
@@ -84,10 +88,11 @@ export default function Hero() {
             variants={imageVariants}
           >
             <div className="hero-image-wrapper">
-              <img
+              <motion.img
                 src={hero_burger}
                 alt="hero_burger"
                 className="hero-img"
+                style={{ rotate }}
               />
             </div>
           </motion.div>

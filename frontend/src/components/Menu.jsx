@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
 
 import emperorBurger from '../assets/emperor_burger.png';
 import obsidianChai from '../assets/obsidian_chai.png';
-import gunpowderFries from '../assets/gunpowder_fries.png';
-import heroChai from '../assets/hero_chai.png';
 import saffronCheesecake from '../assets/saffron_cheesecake.png';
 
 const menuItems = [
@@ -20,15 +17,6 @@ const menuItems = [
   },
   {
     id: 2,
-    name: 'Artisanal Cardamom Chai',
-    category: 'Drinks',
-    description: 'Freshly brewed milk tea sweetened with raw cane sugar and infused with high-grade green cardamom.',
-    price: '$6.50',
-    badge: 'Popular',
-    image: heroChai
-  },
-  {
-    id: 3,
     name: 'The Emperor Burger',
     category: 'Street Eats',
     description: 'Double wagyu beef, aged cheddar, truffle aioli, and caramelized heirloom spices on a toasted brioche.',
@@ -37,16 +25,7 @@ const menuItems = [
     image: emperorBurger
   },
   {
-    id: 4,
-    name: 'Gunpowder Fries',
-    category: 'Street Eats',
-    description: 'Triple-cooked thick-cut fries tossed in our signature smoky gunpowder podi blend and fresh bird’s eye chili.',
-    price: '$9.00',
-    badge: 'Popular',
-    image: gunpowderFries
-  },
-  {
-    id: 5,
+    id: 3,
     name: 'Gold-Leaf Saffron Cheesecake',
     category: 'Delights',
     description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.',
@@ -57,35 +36,9 @@ const menuItems = [
 ];
 
 export default function Menu() {
-  const [activeCategory, setActiveCategory] = useState('All');
-
-  const categories = ['All', 'Drinks', 'Street Eats', 'Delights'];
-
-  const filteredItems = activeCategory === 'All'
-    ? menuItems
-    : menuItems.filter(item => item.category === activeCategory);
-
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
-  };
-
-  const handleOrder = async (item) => {
-    // Proactively send a mock order to backend to dynamically demonstrate admin notification
-    try {
-      await fetch('http://localhost:5000/api/admin/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableNumber: Math.floor(Math.random() * 20 + 1).toString().padStart(2, '0'),
-          items: [item.name],
-          total: parseFloat(item.price.replace('$', ''))
-        })
-      });
-      alert(`Order placed successfully for ${item.name}! Go to the Admin Portal dashboard to see the live update.`);
-    } catch (err) {
-      alert(`Demo Order placed for ${item.name}! (Connect your backend server to see live updates in the Admin dashboard)`);
-    }
   };
 
   return (
@@ -111,59 +64,42 @@ export default function Menu() {
           </motion.p>
         </div>
 
-        {/* Menu category filters */}
-        <div className="gallery-tabs" style={{ marginBottom: '48px' }}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`gallery-tab-btn ${activeCategory === cat ? 'active' : ''}`}
+        {/* Menu Grid */}
+        <div className="featured-grid">
+          {menuItems.map((item) => (
+            <motion.div 
+              className="product-card"
+              key={item.id}
+              variants={cardVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.4 }}
             >
-              {cat}
-            </button>
+              <div className="product-card-image">
+                <img src={item.image} alt={item.name} className="product-card-img" />
+                <span className="product-card-badge">{item.badge}</span>
+              </div>
+              <div className="product-card-content">
+                <h3 className="product-card-title">{item.name}</h3>
+                <p className="product-card-desc">{item.description}</p>
+                <div className="product-card-footer" style={{ justifyContent: 'center' }}>
+                  <span className="product-card-price" style={{ color: 'var(--gold-heritage)' }}>{item.price}</span>
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Menu Grid */}
-        <motion.div 
-          layout
-          className="featured-grid"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item, index) => (
-              <motion.div 
-                layout
-                className="product-card"
-                key={item.id}
-                variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
-                exit="hidden"
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="product-card-image">
-                  <img src={item.image} alt={item.name} className="product-card-img" />
-                  <span className="product-card-badge">{item.badge}</span>
-                </div>
-                <div className="product-card-content">
-                  <h3 className="product-card-title">{item.name}</h3>
-                  <p className="product-card-desc">{item.description}</p>
-                  <div className="product-card-footer">
-                    <span className="product-card-price">{item.price}</span>
-                    <button 
-                      onClick={() => handleOrder(item)} 
-                      className="product-card-order-btn btn-tertiary" 
-                      style={{ border: 'none', cursor: 'pointer', background: 'transparent' }}
-                    >
-                      <ShoppingBag size={14} /> Order Now
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        {/* View Full Menu Button */}
+        <div className="flex-center" style={{ marginTop: '56px' }}>
+          <button 
+            className="btn btn-secondary"
+            onClick={() => alert("The full menu page is currently in development and will be released soon!")}
+          >
+            View Full Menu
+          </button>
+        </div>
 
       </div>
     </section>
