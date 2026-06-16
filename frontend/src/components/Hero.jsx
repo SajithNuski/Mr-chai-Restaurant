@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Star, Coffee } from 'lucide-react';
-import heroChai from '../assets/hero_chai.png';
+import hero_burger from '../assets/hero_burger.png';
 
 export default function Hero() {
   const containerVariants = {
@@ -35,11 +35,11 @@ export default function Hero() {
   return (
     <section id="home" className="hero-sec">
       <div className="hero-video-bg">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           className="hero-video-element"
         >
           <source src="/hero_video.mp4" type="video/mp4" />
@@ -48,8 +48,8 @@ export default function Hero() {
       </div>
       <div className="container">
         <div className="hero-grid">
-          
-          <motion.div 
+
+          <motion.div
             className="hero-content"
             variants={containerVariants}
             initial="hidden"
@@ -59,16 +59,16 @@ export default function Hero() {
               <Flame size={14} style={{ marginRight: '6px' }} />
               STREET FOOD REIMAGINED
             </motion.div>
-            
+
             <motion.h1 className="hero-title" variants={itemVariants}>
               Bold Flavors.<br />
               <span className="gold-text-gradient">Fast Life.</span>
             </motion.h1>
-            
+
             <motion.p className="hero-description" variants={itemVariants}>
               Redefining street food through the lens of luxury. Experience the cinematic contrast of absolute obsidian blacks, shimmering golds, and artisanal Indian spices.
             </motion.p>
-            
+
             <motion.div className="hero-buttons" variants={itemVariants}>
               <a href="#featured" className="btn btn-primary">
                 Explore Menu
@@ -79,16 +79,16 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="hero-visual"
             initial="hidden"
             animate="visible"
             variants={imageVariants}
           >
             <div className="hero-image-wrapper">
-              <img 
-                src={heroChai} 
-                alt="Masala Chai Pouring" 
+              <img
+                src={hero_burger}
+                alt="hero_burger"
                 className="hero-img"
               />
             </div>
