@@ -5,8 +5,8 @@ import hero_burger from '../assets/hero_burger.png';
 
 export default function Hero() {
   const { scrollY } = useScroll();
-  // Map scrollY values from 0 to 1500px to rotation degrees from 0 to 360
-  const rotate = useTransform(scrollY, [0, 1500], [0, 360]);
+  // Map scrollY values from 0 to 3000px to rotation degrees from 0 to 360
+  const rotate = useTransform(scrollY, [0, 3000], [0, 360]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
