@@ -15,6 +15,7 @@ const galleryItems = [
     title: 'The Emperor Burger',
     category: 'Dishes',
     image: emperorBurger,
+    sizeClass: 'tall',
     desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.'
   },
   {
@@ -22,6 +23,7 @@ const galleryItems = [
     title: 'Obsidian Masala Chai',
     category: 'Drinks',
     image: obsidianChai,
+    sizeClass: 'standard',
     desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.'
   },
   {
@@ -29,6 +31,7 @@ const galleryItems = [
     title: 'The Obsidian Sanctuary',
     category: 'Ambiance',
     image: mrChaiAmbiance,
+    sizeClass: 'wide',
     desc: 'Our flagship dining room featuring deep obsidian tones and warm golden pendant lights.'
   },
   {
@@ -36,6 +39,7 @@ const galleryItems = [
     title: 'Gold-Leaf Saffron Cheesecake',
     category: 'Dishes',
     image: saffronCheesecake,
+    sizeClass: 'standard',
     desc: 'Creamy cardamom and saffron cheesecake topped with genuine 24k gold leaf.'
   },
   {
@@ -43,6 +47,7 @@ const galleryItems = [
     title: 'Gunpowder Fries',
     category: 'Dishes',
     image: gunpowderFries,
+    sizeClass: 'standard',
     desc: 'Triple-cooked fries tossed in spicy gunpowder podi blend and bird’s eye chili.'
   },
   {
@@ -50,6 +55,7 @@ const galleryItems = [
     title: 'Artisanal Cardamom Chai',
     category: 'Drinks',
     image: heroChai,
+    sizeClass: 'wide',
     desc: 'A premium pour of freshly boiled milk tea, cardamom pods, and raw cane sugar.'
   }
 ];
@@ -133,7 +139,7 @@ export default function Gallery() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
                 key={item.id}
-                className="gallery-card"
+                className={`gallery-card ${item.sizeClass || 'standard'}`}
                 onClick={() => openLightbox(index)}
               >
                 <div className="gallery-card-image-wrapper">

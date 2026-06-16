@@ -113,8 +113,8 @@ export default function Contact() {
                   <MapPin size={20} />
                 </div>
                 <div className="contact-info-text">
-                  <h4>Flagship Sanctuary</h4>
-                  <p>123 Spice Route Avenue, London, EC1A 1BB</p>
+                  <h4>Oluvil Sanctuary</h4>
+                  <p>Main Street, Oluvil 32360</p>
                 </div>
               </div>
 
@@ -124,7 +124,7 @@ export default function Contact() {
                 </div>
                 <div className="contact-info-text">
                   <h4>Reservations</h4>
-                  <p>+44 (0) 20 7946 0123</p>
+                  <p>067 225 5566</p>
                 </div>
               </div>
 
@@ -134,7 +134,7 @@ export default function Contact() {
                 </div>
                 <div className="contact-info-text">
                   <h4>Direct Email</h4>
-                  <p>hello@mrchai.premium</p>
+                  <p>mrchai.oluvil@gmail.com</p>
                 </div>
               </div>
             </div>

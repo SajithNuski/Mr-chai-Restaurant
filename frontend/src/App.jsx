@@ -132,9 +132,13 @@ function App() {
                   <div className="footer-col">
                     <h4>Hours</h4>
                     <ul className="footer-links" style={{ color: 'var(--text-muted)', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <li>Mon - Thu: 11:00 AM - 10:00 PM</li>
-                      <li>Fri - Sat: 11:00 AM - 11:00 PM</li>
-                      <li>Sunday: 12:00 PM - 9:00 PM</li>
+                      <li>Wednesday: 12:00 PM - 12:00 AM</li>
+                      <li>Thursday: 12:00 PM - 12:00 AM</li>
+                      <li>Friday: 12:00 PM - 12:00 AM</li>
+                      <li>Saturday: 12:00 PM - 12:00 AM</li>
+                      <li>Sunday: 12:00 PM - 12:00 AM</li>
+                      <li>Monday: 12:00 PM - 12:00 AM</li>
+                      <li>Tuesday: 12:00 PM - 12:00 AM</li>
                     </ul>
                   </div>
 
