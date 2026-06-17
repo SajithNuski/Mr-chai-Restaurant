@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Quote, Star, ChevronLeft, ChevronRight, MessageSquare, ExternalLink } from 'lucide-react';
+import { Quote, Star, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+
 
 const defaultGoogleReviews = [
   {
@@ -140,9 +141,9 @@ export default function Reviews() {
     <section id="reviews" className="reviews-sec section-padding">
       <div className="container">
         <div className="reviews-split-grid">
-          
+
           <div className="reviews-left-col">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -173,19 +174,7 @@ export default function Reviews() {
 
           <div className="reviews-right-col">
             <div className="modern-typo-reviews">
-              {/* Google Rating Summary Badge */}
-              <div className="google-rating-summary">
-                <span className="google-badge-text">
-                  <GoogleIcon /> Google Rating:
-                </span>
-                <strong>4.9</strong>
-                <div className="google-badge-stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={11} fill="var(--gold-heritage)" color="var(--gold-heritage)" />
-                  ))}
-                </div>
-                <span>(184 reviews)</span>
-              </div>
+
 
               {/* Side arrow buttons */}
               {reviews.length > 1 && (
@@ -193,7 +182,7 @@ export default function Reviews() {
                   <button onClick={handlePrev} className="modern-quote-nav-btn prev" aria-label="Previous review">
                     <ChevronLeft size={20} />
                   </button>
-                  
+
                   <button onClick={handleNext} className="modern-quote-nav-btn next" aria-label="Next review">
                     <ChevronRight size={20} />
                   </button>
@@ -223,9 +212,9 @@ export default function Reviews() {
 
                       <div className="google-reviewer-profile">
                         <div className="google-avatar-wrapper">
-                          <img 
-                            src={reviews[current].profile_photo_url || "/default-avatar.png"} 
-                            alt={reviews[current].author_name} 
+                          <img
+                            src={reviews[current].profile_photo_url || "/default-avatar.png"}
+                            alt={reviews[current].author_name}
                             className="google-avatar-img"
                             onError={(e) => {
                               e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(reviews[current].author_name)}&background=1d1505&color=d4a017`;
@@ -251,16 +240,7 @@ export default function Reviews() {
                         </div>
                       </div>
 
-                      {reviews[current].author_url && (
-                        <a 
-                          href={reviews[current].author_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="google-review-link"
-                        >
-                          View on Google Maps <ExternalLink size={10} style={{ marginLeft: '2px', display: 'inline' }} />
-                        </a>
-                      )}
+
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -283,7 +263,7 @@ export default function Reviews() {
               {/* Autoplay progress line */}
               {reviews.length > 1 && (
                 <div className="modern-progress-bar-container">
-                  <motion.div 
+                  <motion.div
                     key={`bar-${current}`}
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
