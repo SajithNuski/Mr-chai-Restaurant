@@ -59,10 +59,7 @@ export default function Hero() {
             initial="hidden"
             animate="visible"
           >
-            <motion.div className="hero-badge" variants={itemVariants}>
-              <Flame size={14} style={{ marginRight: '6px' }} />
-              STREET FOOD REIMAGINED
-            </motion.div>
+
 
             <motion.h1 className="hero-title" variants={itemVariants}>
               CAFFE and<br />

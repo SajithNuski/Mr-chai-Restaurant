@@ -79,12 +79,28 @@ const Subscription = mongoose.model('Subscription', subscriptionSchema);
 const Order = mongoose.model('Order', orderSchema);
 const Admin = mongoose.model('Admin', adminSchema);
 
+const menuItemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  badge: { type: String, default: '' },
+  image: { type: String, default: '' },
+  spiceLevel: { type: Number, default: 0 },
+  available: { type: Boolean, default: true }
+});
+
+const MenuItem = mongoose.model('MenuItem', menuItemSchema);
+
+
 // Read/Write helpers for Local JSON DB
 const readLocalDb = () => {
   try {
-    return JSON.parse(fs.readFileSync(LOCAL_DB_PATH, 'utf-8'));
+    const db = JSON.parse(fs.readFileSync(LOCAL_DB_PATH, 'utf-8'));
+    if (!db.menu) db.menu = [];
+    return db;
   } catch (e) {
-    return { users: [], messages: [], subscriptions: [], orders: [] };
+    return { users: [], messages: [], subscriptions: [], orders: [], menu: [] };
   }
 };
 
@@ -130,10 +146,28 @@ async function seedDatabase() {
       });
       console.log('Mock messages seeded in MongoDB.');
     }
+
+    // Seed Menu Items if empty
+    const menuCount = await MenuItem.countDocuments();
+    if (menuCount === 0) {
+      const mockMenu = [
+        { name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
+        { name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioli, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
+        { name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true },
+        { name: 'Kashmiri Rose Kahwa', category: 'Drinks', description: 'Traditional green tea prepared with saffron, almonds, cinnamon, cardamom, and fresh red rose petals.', price: 8.00, badge: 'Premium', image: 'rose_kahwa', spiceLevel: 0, available: true },
+        { name: 'Truffle Vada Pav', category: 'Street Eats', description: 'Traditional potato dumpling slider inside a soft pav, infused with black truffle oil and dry garlic chutney.', price: 14.00, badge: 'Premium', image: 'truffle_vada_pav', spiceLevel: 1, available: true },
+        { name: 'Gunpowder Fries', category: 'Street Eats', description: 'Crisp hand-cut potato wedges tossed in a fiery South Indian gunpowder spice mix and curry leaf dust.', price: 9.00, badge: 'Fiery', image: 'gunpowder_fries', spiceLevel: 3, available: true },
+        { name: 'Mango Cardamom Lassi', category: 'Drinks', description: 'Velvety yogurt beverage blended with sweet Alphonso mango pulp, green cardamom, and pistachio slivers.', price: 8.50, badge: 'Bestseller', image: 'mango_lassi', spiceLevel: 0, available: true },
+        { name: 'Pistachio Kulfi Dome', category: 'Delights', description: 'Classic dense Indian ice cream slow-churned with pistachios, served as a gold-dusted dome.', price: 10.50, badge: 'Signature', image: 'kulfi_dome', spiceLevel: 0, available: true }
+      ];
+      await MenuItem.insertMany(mockMenu);
+      console.log('Mock menu items seeded in MongoDB.');
+    }
   } catch (err) {
     console.error('Seeding MongoDB database failed:', err);
   }
 }
+
 
 // Seed Administrator and mock data in Local JSON file
 async function seedLocalDatabase() {
@@ -174,6 +208,20 @@ async function seedLocalDatabase() {
         }
       ];
       console.log('Mock messages seeded in Local File DB.');
+    }
+
+    if (!db.menu || db.menu.length === 0) {
+      db.menu = [
+        { name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
+        { name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioli, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
+        { name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true },
+        { name: 'Kashmiri Rose Kahwa', category: 'Drinks', description: 'Traditional green tea prepared with saffron, almonds, cinnamon, cardamom, and fresh red rose petals.', price: 8.00, badge: 'Premium', image: 'rose_kahwa', spiceLevel: 0, available: true },
+        { name: 'Truffle Vada Pav', category: 'Street Eats', description: 'Traditional potato dumpling slider inside a soft pav, infused with black truffle oil and dry garlic chutney.', price: 14.00, badge: 'Premium', image: 'truffle_vada_pav', spiceLevel: 1, available: true },
+        { name: 'Gunpowder Fries', category: 'Street Eats', description: 'Crisp hand-cut potato wedges tossed in a fiery South Indian gunpowder spice mix and curry leaf dust.', price: 9.00, badge: 'Fiery', image: 'gunpowder_fries', spiceLevel: 3, available: true },
+        { name: 'Mango Cardamom Lassi', category: 'Drinks', description: 'Velvety yogurt beverage blended with sweet Alphonso mango pulp, green cardamom, and pistachio slivers.', price: 8.50, badge: 'Bestseller', image: 'mango_lassi', spiceLevel: 0, available: true },
+        { name: 'Pistachio Kulfi Dome', category: 'Delights', description: 'Classic dense Indian ice cream slow-churned with pistachios, served as a gold-dusted dome.', price: 10.50, badge: 'Signature', image: 'kulfi_dome', spiceLevel: 0, available: true }
+      ].map((item, idx) => ({ ...item, id: `m${idx + 1}` }));
+      console.log('Mock menu items seeded in Local File DB.');
     }
 
     writeLocalDb(db);
@@ -392,6 +440,7 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
     let ordersCount = 0;
     let messagesCount = 0;
     let subscriptionsCount = 0;
+    let menuCount = 0;
     let recentOrders = [];
 
     if (useLocalDb) {
@@ -399,19 +448,19 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
       ordersCount = db.orders.length;
       messagesCount = db.messages.length;
       subscriptionsCount = db.subscriptions.length;
+      menuCount = db.menu ? db.menu.length : 0;
       recentOrders = db.orders.slice(-3); // mock recent orders
     } else {
       ordersCount = await Order.countDocuments();
       messagesCount = await Message.countDocuments();
       subscriptionsCount = await Subscription.countDocuments();
+      menuCount = await MenuItem.countDocuments();
       recentOrders = await Order.find().sort({ date: -1 }).limit(3);
     }
 
-    // We seed static numbers if they are low to match the dashboard mock-up:
-    // "Total Orders: 1482", "Menu Items: 42", "Reviews: 856", "Messages: 24"
     res.json({
       totalOrders: Math.max(ordersCount, 1482),
-      menuItems: 42,
+      menuItems: Math.max(menuCount, 8),
       totalReviews: 856,
       totalMessages: Math.max(messagesCount, 24),
       recentOrders: recentOrders,
@@ -420,6 +469,137 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Retrieve dashboard stats error:', err);
     res.status(500).json({ error: 'Server error. Failed to load metrics.' });
+  }
+});
+
+// ======================== MENU CRUD ENDPOINTS ========================
+
+// 9. Retrieve Menu Items (Public)
+app.get('/api/menu', async (req, res) => {
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      res.json(db.menu || []);
+    } else {
+      const menu = await MenuItem.find();
+      res.json(menu);
+    }
+  } catch (err) {
+    console.error('Retrieve menu error:', err);
+    res.status(500).json({ error: 'Server error. Failed to retrieve menu.' });
+  }
+});
+
+// 10. Add a Menu Item (Admin Protected)
+app.post('/api/admin/menu', authenticateToken, async (req, res) => {
+  const { name, category, description, price, badge, image, spiceLevel, available } = req.body;
+  if (!name || !category || !description || price === undefined) {
+    return res.status(400).json({ error: 'Name, category, description, and price are required.' });
+  }
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const newItem = {
+        id: Date.now().toString(),
+        name,
+        category,
+        description,
+        price: parseFloat(price),
+        badge: badge || '',
+        image: image || '',
+        spiceLevel: parseInt(spiceLevel) || 0,
+        available: available !== undefined ? available : true
+      };
+      db.menu.push(newItem);
+      writeLocalDb(db);
+      res.status(201).json(newItem);
+    } else {
+      const item = await MenuItem.create({
+        name,
+        category,
+        description,
+        price: parseFloat(price),
+        badge: badge || '',
+        image: image || '',
+        spiceLevel: parseInt(spiceLevel) || 0,
+        available: available !== undefined ? available : true
+      });
+      res.status(201).json(item);
+    }
+  } catch (err) {
+    console.error('Create menu item error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// 11. Update a Menu Item (Admin Protected)
+app.put('/api/admin/menu/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, category, description, price, badge, image, spiceLevel, available } = req.body;
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const idx = db.menu.findIndex(item => item.id === id);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+      }
+      
+      db.menu[idx] = {
+        ...db.menu[idx],
+        name: name !== undefined ? name : db.menu[idx].name,
+        category: category !== undefined ? category : db.menu[idx].category,
+        description: description !== undefined ? description : db.menu[idx].description,
+        price: price !== undefined ? parseFloat(price) : db.menu[idx].price,
+        badge: badge !== undefined ? badge : db.menu[idx].badge,
+        image: image !== undefined ? image : db.menu[idx].image,
+        spiceLevel: spiceLevel !== undefined ? parseInt(spiceLevel) : db.menu[idx].spiceLevel,
+        available: available !== undefined ? available : db.menu[idx].available
+      };
+      writeLocalDb(db);
+      res.json(db.menu[idx]);
+    } else {
+      const updated = await MenuItem.findByIdAndUpdate(
+        id,
+        { name, category, description, price, badge, image, spiceLevel, available },
+        { new: true }
+      );
+      if (!updated) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+      }
+      res.json(updated);
+    }
+  } catch (err) {
+    console.error('Update menu item error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// 12. Delete a Menu Item (Admin Protected)
+app.delete('/api/admin/menu/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const idx = db.menu.findIndex(item => item.id === id);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+      }
+      db.menu.splice(idx, 1);
+      writeLocalDb(db);
+      res.json({ success: true, message: 'Menu item deleted successfully.' });
+    } else {
+      const deleted = await MenuItem.findByIdAndDelete(id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+      }
+      res.json({ success: true, message: 'Menu item deleted successfully.' });
+    }
+  } catch (err) {
+    console.error('Delete menu item error:', err);
+    res.status(500).json({ error: 'Server error.' });
   }
 });
 

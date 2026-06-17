@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+
 
 import emperorBurger from '../assets/emperor_burger.png';
 import obsidianChai from '../assets/obsidian_chai.png';
@@ -93,12 +95,19 @@ export default function Menu() {
 
         {/* View Full Menu Button */}
         <div className="flex-center" style={{ marginTop: '56px' }}>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => alert("The full menu page is currently in development and will be released soon!")}
+          <motion.button 
+            className="btn-modern-explore"
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => window.location.hash = '#menu-full'}
           >
-            View Full Menu
-          </button>
+            <span className="btn-modern-explore-bg"></span>
+            <span className="btn-modern-explore-text">View Full Menu</span>
+            <span className="btn-modern-explore-icon">
+              <ArrowRight size={16} />
+            </span>
+            <span className="btn-modern-explore-glow"></span>
+          </motion.button>
         </div>
 
       </div>

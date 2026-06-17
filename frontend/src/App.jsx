@@ -8,12 +8,14 @@ import Reviews from './components/Reviews';
 import Contact from './components/Contact';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import FullMenu from './components/FullMenu';
 import logoImg from './assets/logo.png';
 import { Toaster } from 'sonner';
 import './App.css';
 
 function App() {
   const [isAdminView, setIsAdminView] = useState(false);
+  const [currentView, setCurrentView] = useState('website'); // 'website' | 'full-menu'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
@@ -24,16 +26,28 @@ function App() {
       setIsLoggedIn(true);
     }
 
-    // Hash routing check on load (e.g. #admin)
+    // Hash routing check on load (e.g. #admin, #menu-full)
     if (window.location.hash === '#admin') {
       setIsAdminView(true);
+      setCurrentView('website');
+    } else if (window.location.hash === '#menu-full') {
+      setIsAdminView(false);
+      setCurrentView('full-menu');
+    } else {
+      setIsAdminView(false);
+      setCurrentView('website');
     }
 
     const handleHashChange = () => {
       if (window.location.hash === '#admin') {
         setIsAdminView(true);
+        setCurrentView('website');
+      } else if (window.location.hash === '#menu-full') {
+        setIsAdminView(false);
+        setCurrentView('full-menu');
       } else {
         setIsAdminView(false);
+        setCurrentView('website');
       }
     };
 
@@ -100,11 +114,17 @@ function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <Hero />
-            <Menu />
-            <Gallery />
-            <Reviews />
-            <Contact />
+            {currentView === 'full-menu' ? (
+              <FullMenu onBack={() => { setCurrentView('website'); window.location.hash = ''; }} />
+            ) : (
+              <>
+                <Hero />
+                <Menu />
+                <Gallery />
+                <Reviews />
+                <Contact />
+              </>
+            )}
 
             {/* Footer */}
             <footer className="footer">

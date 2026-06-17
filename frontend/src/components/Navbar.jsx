@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+
 import logoImg from '../assets/logo.png';
 
 export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
@@ -44,11 +45,6 @@ export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
               </li>
             </ul>
 
-            <div className="nav-actions">
-              <button onClick={() => onToggleAdmin(true)} className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '11px' }}>
-                <ShieldAlert size={14} /> Admin Portal
-              </button>
-            </div>
           </>
         ) : (
           <div className="nav-actions">

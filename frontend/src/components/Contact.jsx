@@ -80,9 +80,23 @@ export default function Contact() {
                 onChange={(e) => setNewsEmail(e.target.value)}
                 required
               />
-              <button type="submit" className="btn btn-primary" disabled={newsStatus.loading}>
-                {newsStatus.loading ? 'Subscribing...' : 'Subscribe'}
-              </button>
+              <motion.button
+                type="submit"
+                className="btn-modern-explore"
+                disabled={newsStatus.loading}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.97 }}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <span className="btn-modern-explore-bg"></span>
+                <span className="btn-modern-explore-text">
+                  {newsStatus.loading ? 'Subscribing...' : 'Subscribe'}
+                </span>
+                <span className="btn-modern-explore-icon">
+                  <Send size={16} />
+                </span>
+                <span className="btn-modern-explore-glow"></span>
+              </motion.button>
             </form>
           </div>
         </div>
