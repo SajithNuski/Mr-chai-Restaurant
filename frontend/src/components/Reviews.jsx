@@ -139,156 +139,163 @@ export default function Reviews() {
   return (
     <section id="reviews" className="reviews-sec section-padding">
       <div className="container">
-        
-        <div className="section-header">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="reviews-pre-title"
-          >
-            <MessageSquare size={14} style={{ marginRight: '6px' }} /> GOOGLE REVIEWS
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            Culinary <span className="gold-text-gradient">Endorsements</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            Here is what our respected guests and food critics have to say about the luxury Mr. Chai experience.
-          </motion.p>
-        </div>
-
-        <div className="modern-typo-reviews">
-          {/* Google Rating Summary Badge */}
-          <div className="google-rating-summary">
-            <span className="google-badge-text">
-              <GoogleIcon /> Google Rating:
-            </span>
-            <strong>4.9</strong>
-            <div className="google-badge-stars">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={11} fill="var(--gold-heritage)" color="var(--gold-heritage)" />
-              ))}
-            </div>
-            <span>(184 reviews)</span>
+        <div className="reviews-split-grid">
+          
+          <div className="reviews-left-col">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="reviews-pre-title"
+            >
+              <MessageSquare size={14} style={{ marginRight: '6px' }} /> GOOGLE REVIEWS
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="reviews-split-title"
+            >
+              Culinary <br />
+              <span className="gold-text-gradient">Endorsements</span>
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="reviews-split-desc"
+            >
+              Here is what our respected guests and food critics have to say about the luxury Mr. Chai experience.
+            </motion.p>
           </div>
 
-          {/* Side arrow buttons */}
-          {reviews.length > 1 && (
-            <>
-              <button onClick={handlePrev} className="modern-quote-nav-btn prev" aria-label="Previous review">
-                <ChevronLeft size={20} />
-              </button>
-              
-              <button onClick={handleNext} className="modern-quote-nav-btn next" aria-label="Next review">
-                <ChevronRight size={20} />
-              </button>
-            </>
-          )}
+          <div className="reviews-right-col">
+            <div className="modern-typo-reviews">
+              {/* Google Rating Summary Badge */}
+              <div className="google-rating-summary">
+                <span className="google-badge-text">
+                  <GoogleIcon /> Google Rating:
+                </span>
+                <strong>4.9</strong>
+                <div className="google-badge-stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={11} fill="var(--gold-heritage)" color="var(--gold-heritage)" />
+                  ))}
+                </div>
+                <span>(184 reviews)</span>
+              </div>
 
-          {/* Testimonial Quote display */}
-          <div className="modern-quote-display">
-            <AnimatePresence initial={false} custom={direction} mode="wait">
-              {reviews.length > 0 && (
-                <motion.div
-                  key={current}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  className="modern-quote-content"
-                >
-                  <div className="modern-quote-icon">
-                    <Quote size={36} style={{ strokeWidth: 1.2 }} />
-                  </div>
-
-                  <blockquote className="modern-quote-text">
-                    "{reviews[current].text}"
-                  </blockquote>
-
-                  <div className="google-reviewer-profile">
-                    <div className="google-avatar-wrapper">
-                      <img 
-                        src={reviews[current].profile_photo_url || "/default-avatar.png"} 
-                        alt={reviews[current].author_name} 
-                        className="google-avatar-img"
-                        onError={(e) => {
-                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(reviews[current].author_name)}&background=1d1505&color=d4a017`;
-                        }}
-                      />
-                      <div className="google-mini-icon">
-                        <GoogleIcon />
-                      </div>
-                    </div>
-
-                    <div className="google-reviewer-info">
-                      <span className="google-reviewer-name">{reviews[current].author_name}</span>
-                      <div className="google-review-stars-meta">
-                        <div className="google-stars-row">
-                          {[...Array(reviews[current].rating || 5)].map((_, i) => (
-                            <Star key={i} size={11} fill="var(--gold-heritage)" color="var(--gold-heritage)" />
-                          ))}
-                        </div>
-                        <span className="google-relative-time">
-                          {reviews[current].relative_time_description}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {reviews[current].author_url && (
-                    <a 
-                      href={reviews[current].author_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="google-review-link"
-                    >
-                      View on Google Maps <ExternalLink size={10} style={{ marginLeft: '2px', display: 'inline' }} />
-                    </a>
-                  )}
-                </motion.div>
+              {/* Side arrow buttons */}
+              {reviews.length > 1 && (
+                <>
+                  <button onClick={handlePrev} className="modern-quote-nav-btn prev" aria-label="Previous review">
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <button onClick={handleNext} className="modern-quote-nav-btn next" aria-label="Next review">
+                    <ChevronRight size={20} />
+                  </button>
+                </>
               )}
-            </AnimatePresence>
+
+              {/* Testimonial Quote display */}
+              <div className="modern-quote-display">
+                <AnimatePresence initial={false} custom={direction} mode="wait">
+                  {reviews.length > 0 && (
+                    <motion.div
+                      key={current}
+                      custom={direction}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      className="modern-quote-content"
+                    >
+                      <div className="modern-quote-icon">
+                        <Quote size={36} style={{ strokeWidth: 1.2 }} />
+                      </div>
+
+                      <blockquote className="modern-quote-text">
+                        "{reviews[current].text}"
+                      </blockquote>
+
+                      <div className="google-reviewer-profile">
+                        <div className="google-avatar-wrapper">
+                          <img 
+                            src={reviews[current].profile_photo_url || "/default-avatar.png"} 
+                            alt={reviews[current].author_name} 
+                            className="google-avatar-img"
+                            onError={(e) => {
+                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(reviews[current].author_name)}&background=1d1505&color=d4a017`;
+                            }}
+                          />
+                          <div className="google-mini-icon">
+                            <GoogleIcon />
+                          </div>
+                        </div>
+
+                        <div className="google-reviewer-info">
+                          <span className="google-reviewer-name">{reviews[current].author_name}</span>
+                          <div className="google-review-stars-meta">
+                            <div className="google-stars-row">
+                              {[...Array(reviews[current].rating || 5)].map((_, i) => (
+                                <Star key={i} size={11} fill="var(--gold-heritage)" color="var(--gold-heritage)" />
+                              ))}
+                            </div>
+                            <span className="google-relative-time">
+                              {reviews[current].relative_time_description}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {reviews[current].author_url && (
+                        <a 
+                          href={reviews[current].author_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="google-review-link"
+                        >
+                          View on Google Maps <ExternalLink size={10} style={{ marginLeft: '2px', display: 'inline' }} />
+                        </a>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Dot Indicators */}
+              {reviews.length > 1 && (
+                <div className="google-carousel-dots">
+                  {reviews.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleDotClick(idx)}
+                      className={`google-carousel-dot ${current === idx ? 'active' : ''}`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Autoplay progress line */}
+              {reviews.length > 1 && (
+                <div className="modern-progress-bar-container">
+                  <motion.div 
+                    key={`bar-${current}`}
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: AUTOPLAY_TIME / 1000, ease: 'linear' }}
+                    className="modern-progress-bar"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Dot Indicators */}
-          {reviews.length > 1 && (
-            <div className="google-carousel-dots">
-              {reviews.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleDotClick(idx)}
-                  className={`google-carousel-dot ${current === idx ? 'active' : ''}`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Autoplay progress line */}
-          {reviews.length > 1 && (
-            <div className="modern-progress-bar-container">
-              <motion.div 
-                key={`bar-${current}`}
-                initial={{ width: '0%' }}
-                animate={{ width: '100%' }}
-                transition={{ duration: AUTOPLAY_TIME / 1000, ease: 'linear' }}
-                className="modern-progress-bar"
-              />
-            </div>
-          )}
         </div>
-
       </div>
     </section>
   );

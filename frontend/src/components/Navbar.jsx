@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Coffee, ShieldAlert, ArrowLeft } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,8 +21,7 @@ export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="container">
         <a href="#home" className="logo" onClick={() => isAdminView && onToggleAdmin(false)}>
-          <span className="logo-symbol"><Coffee size={28} style={{ strokeWidth: 1.5 }} /></span>
-          MR. CHAI
+          <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" />
         </a>
 
         {!isAdminView ? (

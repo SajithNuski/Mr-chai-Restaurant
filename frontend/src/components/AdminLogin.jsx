@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Coffee, Shield, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Shield, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
+import logoImg from '../assets/logo.png';
 
 export default function AdminLogin({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState({ loading: false, error: null });
+  const [status, setStatus] = useState({ loading: false });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus({ loading: true, error: null });
+    setStatus({ loading: true });
 
     try {
       const res = await fetch('http://localhost:5000/api/admin/login', {
@@ -23,21 +25,23 @@ export default function AdminLogin({ onLoginSuccess }) {
       if (res.ok) {
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', data.username);
-        setStatus({ loading: false, error: null });
+        toast.success('Access granted! Welcome back.');
         onLoginSuccess();
       } else {
-        setStatus({ loading: false, error: data.error || 'Invalid credentials.' });
+        toast.error(data.error || 'Invalid credentials.');
       }
     } catch (err) {
-      // resiliance check: if connection is refused (server not running), check if they entered seed defaults to mock login
+      // resilience check: if connection is refused (server not running), check if they entered seed defaults to mock login
       if (username === 'admin' && password === 'admin123') {
         localStorage.setItem('adminToken', 'mock-token-fallback');
         localStorage.setItem('adminUser', 'admin (mock)');
-        setStatus({ loading: false, error: null });
+        toast.success('Access granted (Offline Mode)! Welcome back.');
         onLoginSuccess();
       } else {
-        setStatus({ loading: false, error: 'Cannot connect to backend server. Try running npm run dev in backend. (Hint: default login is admin/admin123)' });
+        toast.error('Cannot connect to backend server. (Hint: default login is admin/admin123)');
       }
+    } finally {
+      setStatus({ loading: false });
     }
   };
 
@@ -50,19 +54,9 @@ export default function AdminLogin({ onLoginSuccess }) {
         transition={{ duration: 0.6 }}
       >
         <div className="admin-login-header">
-          <div className="logo flex-center" style={{ margin: '0 auto', fontSize: '32px' }}>
-            <span className="logo-symbol"><Coffee size={36} /></span>
-          </div>
-          <h2>MR. CHAI</h2>
+          <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" style={{ margin: '0 auto 16px', height: '60px', width: '60px' }} />
           <p className="gold-accent" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Management Portal</p>
         </div>
-
-        {status.error && (
-          <div className="form-alert form-alert-error" style={{ marginBottom: 0 }}>
-            <AlertCircle size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
-            {status.error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>

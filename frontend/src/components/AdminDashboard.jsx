@@ -4,6 +4,9 @@ import {
   Menu as MenuIcon, Settings, LogOut, RefreshCw, Bell, Users
 } from 'lucide-react';
 
+import logoImg from '../assets/logo.png';
+import { toast } from 'sonner';
+
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
@@ -95,6 +98,11 @@ export default function AdminDashboard({ onLogout }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleManualRefresh = async () => {
+    await fetchDashboardData();
+    toast.success('Real-time database metrics synchronized.');
   };
 
   useEffect(() => {
@@ -198,8 +206,8 @@ export default function AdminDashboard({ onLogout }) {
       {/* Sidebar Navigation */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <h2>MR. CHAI</h2>
-          <p>Management Portal</p>
+          <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" style={{ height: '40px', width: '40px', marginBottom: '8px' }} />
+          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--gold-heritage)', fontWeight: 700 }}>Management Portal</p>
         </div>
 
         <ul className="sidebar-nav">
@@ -270,7 +278,7 @@ export default function AdminDashboard({ onLogout }) {
             <h1>Executive Dashboard</h1>
             <p>Real-time analytics and management operations.</p>
           </div>
-          <button onClick={fetchDashboardData} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '8px 16px', gap: '6px', fontSize: '12px' }}>
+          <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '8px 16px', gap: '6px', fontSize: '12px' }}>
             <RefreshCw size={14} /> Refresh Logs
           </button>
         </header>

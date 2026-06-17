@@ -8,7 +8,8 @@ import Reviews from './components/Reviews';
 import Contact from './components/Contact';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
-import { Coffee } from 'lucide-react';
+import logoImg from './assets/logo.png';
+import { Toaster } from 'sonner';
 import './App.css';
 
 function App() {
@@ -112,8 +113,7 @@ function App() {
                   
                   <div className="footer-col">
                     <a href="#home" className="logo" style={{ alignSelf: 'flex-start' }}>
-                      <span className="logo-symbol"><Coffee size={24} /></span>
-                      MR. CHAI
+                      <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" />
                     </a>
                     <p style={{ fontSize: '14px' }}>Redefining street food through the lens of luxury. Experience the cinematic contrast of absolute obsidian blacks, shimmering golds, and artisanal Indian spices.</p>
                   </div>
@@ -189,6 +189,7 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      <Toaster position="top-right" theme="dark" richColors closeButton />
     </div>
   );
 }

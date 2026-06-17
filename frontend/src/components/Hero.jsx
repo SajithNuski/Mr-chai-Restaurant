@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Flame, Star, Coffee } from 'lucide-react';
+import { Flame, Star, Coffee, ArrowRight } from 'lucide-react';
 import hero_burger from '../assets/hero_burger.png';
 
 export default function Hero() {
@@ -74,10 +74,19 @@ export default function Hero() {
             </motion.p>
 
             <motion.div className="hero-buttons" variants={itemVariants}>
-              <a href="#menu" className="btn btn-primary">
-                Explore Menu
-              </a>
-
+              <motion.a
+                href="#menu"
+                className="btn-modern-explore"
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span className="btn-modern-explore-bg"></span>
+                <span className="btn-modern-explore-text">Explore Menu</span>
+                <span className="btn-modern-explore-icon">
+                  <ArrowRight size={16} />
+                </span>
+                <span className="btn-modern-explore-glow"></span>
+              </motion.a>
             </motion.div>
           </motion.div>
 
