@@ -19,6 +19,8 @@ dist/
 build/
 out/
 .next/
+public/
+
 
 # IDE and Editor configs
 .vscode/
