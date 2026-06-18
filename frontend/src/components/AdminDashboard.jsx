@@ -47,7 +47,7 @@ export default function AdminDashboard({ onLogout }) {
     setLoading(true);
     try {
       // Fetch stats
-      const statsRes = await fetch('http://localhost:5000/api/admin/dashboard-stats', {
+      const statsRes = await fetch('/api/admin/dashboard-stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statsRes.ok) {
@@ -63,7 +63,7 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       // Fetch messages
-      const msgRes = await fetch('http://localhost:5000/api/admin/messages', {
+      const msgRes = await fetch('/api/admin/messages', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (msgRes.ok) {
@@ -72,7 +72,7 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       // Fetch orders
-      const orderRes = await fetch('http://localhost:5000/api/admin/orders', {
+      const orderRes = await fetch('/api/admin/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (orderRes.ok) {
@@ -81,7 +81,7 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       // Fetch subscribers
-      const subRes = await fetch('http://localhost:5000/api/admin/subscriptions', {
+      const subRes = await fetch('/api/admin/subscriptions', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (subRes.ok) {
@@ -90,7 +90,7 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       // Fetch menu items
-      const menuRes = await fetch('http://localhost:5000/api/menu');
+      const menuRes = await fetch('/api/menu');
       if (menuRes.ok) {
         const menuData = await menuRes.json();
         setMenuItems(menuData);
@@ -163,8 +163,8 @@ export default function AdminDashboard({ onLogout }) {
     try {
       const isEditing = editingItem && (editingItem._id || editingItem.id);
       const url = isEditing
-        ? `http://localhost:5000/api/admin/menu/${editingItem._id || editingItem.id}`
-        : 'http://localhost:5000/api/admin/menu';
+        ? `/api/admin/menu/${editingItem._id || editingItem.id}`
+        : '/api/admin/menu';
       
       const method = isEditing ? 'PUT' : 'POST';
 
@@ -199,7 +199,7 @@ export default function AdminDashboard({ onLogout }) {
     
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/menu/${itemId}`, {
+      const res = await fetch(`/api/admin/menu/${itemId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

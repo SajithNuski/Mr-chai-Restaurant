@@ -17,7 +17,7 @@ export default function Contact() {
     setContactStatus({ loading: true });
 
     try {
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -42,7 +42,7 @@ export default function Contact() {
     setNewsStatus({ loading: true });
 
     try {
-      const res = await fetch('http://localhost:5000/api/subscribe', {
+      const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newsEmail })

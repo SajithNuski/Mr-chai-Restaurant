@@ -22,7 +22,9 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mrchai
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyfor_mrchai_2026';
 
 // Resilient Fallback Database Storage (JSON File)
-const LOCAL_DB_PATH = path.join(__dirname, 'local_db.json');
+const LOCAL_DB_PATH = process.env.VERCEL
+  ? path.join('/tmp', 'local_db.json')
+  : path.join(__dirname, 'local_db.json');
 let useLocalDb = true; // Start in local DB fallback mode for resilience
 
 // Initialize local database file if not exists
@@ -31,9 +33,14 @@ if (!fs.existsSync(LOCAL_DB_PATH)) {
     users: [],
     messages: [],
     subscriptions: [],
-    orders: []
+    orders: [],
+    menu: []
   };
-  fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(initialData, null, 2));
+  try {
+    fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(initialData, null, 2));
+  } catch (err) {
+    console.error('Failed to write initial local database file:', err.message);
+  }
 }
 
 // Database Connection
@@ -604,9 +611,13 @@ app.delete('/api/admin/menu/:id', authenticateToken, async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Mr. Chai server running on port ${PORT}`);
-  if (useLocalDb) {
-    console.log(`Resilient local DB is active at: ${LOCAL_DB_PATH}`);
-  }
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Mr. Chai server running on port ${PORT}`);
+    if (useLocalDb) {
+      console.log(`Resilient local DB is active at: ${LOCAL_DB_PATH}`);
+    }
+  });
+}
+
+export default app;

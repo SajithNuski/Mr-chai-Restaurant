@@ -49,7 +49,7 @@ export default function FullMenu({ onBack }) {
   const fetchMenu = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/menu');
+      const res = await fetch('/api/menu');
       if (!res.ok) throw new Error('Failed to fetch menu');
       const data = await res.json();
       setMenuItems(data.length > 0 ? data : fallbackMenu);
