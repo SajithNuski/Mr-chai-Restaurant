@@ -13,18 +13,14 @@ import { toast } from 'sonner';
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
-    totalOrders: 1482,
     menuItems: 42,
     totalReviews: 856,
     totalMessages: 24,
-    recentOrders: [],
     weeklyVolume: [120, 180, 150, 220, 190, 240, 210]
   });
   const [messages, setMessages] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [subscribers, setSubscribers] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
-  const [alertOrder, setAlertOrder] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Menu form & modal states
@@ -66,12 +62,6 @@ export default function AdminDashboard({ onLogout }) {
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
-        if (statsData.recentOrders && statsData.recentOrders.length > 0) {
-          const latest = statsData.recentOrders[0];
-          if (latest.status === 'Pending') {
-            setAlertOrder(latest);
-          }
-        }
       }
 
       // Fetch messages
@@ -85,19 +75,6 @@ export default function AdminDashboard({ onLogout }) {
       if (msgRes.ok) {
         const msgData = await msgRes.json();
         setMessages(msgData);
-      }
-
-      // Fetch orders
-      const orderRes = await fetch('/api/admin/orders', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (orderRes.status === 401 || orderRes.status === 403) {
-        handleAuthError();
-        return;
-      }
-      if (orderRes.ok) {
-        const orderData = await orderRes.json();
-        setOrders(orderData);
       }
 
       // Fetch subscribers
@@ -126,22 +103,16 @@ export default function AdminDashboard({ onLogout }) {
         { id: '1', name: 'Aarav Mehta', email: 'aarav.mehta@example.com', subject: 'Catering Enquiry', message: 'Hello, I would like to enquire about catering for a corporate event of 50 people next month. Love your brand style!', date: new Date(Date.now() - 3600000 * 2).toISOString() },
         { id: '2', name: 'Priya Sharma', email: 'priya@example.com', subject: 'Booking Enquiry', message: 'Do you have availability for a private lounge booking of 15 people this Saturday evening?', date: new Date(Date.now() - 3600000 * 5).toISOString() }
       ]);
-      setOrders([
-        { id: '1', tableNumber: '12', items: ['Truffle Vada Pav', 'Signature Saffron Chai'], total: 28.50, status: 'Pending', date: new Date(Date.now() - 240000).toISOString() },
-        { id: '2', tableNumber: '04', items: ['The Emperor Burger', 'Gunpowder Fries', 'Obsidian Masala Chai'], total: 38.00, status: 'Completed', date: new Date(Date.now() - 3600000).toISOString() },
-        { id: '3', tableNumber: '09', items: ['Gold-Dust Chicken', 'Truffle Silk Fries'], total: 24.50, status: 'Completed', date: new Date(Date.now() - 7200000).toISOString() }
-      ]);
       setSubscribers([
         { id: '1', email: 'vip-guest@luxury.com', date: new Date(Date.now() - 86400000).toISOString() },
         { id: '2', email: 'foodie@bazaar.org', date: new Date(Date.now() - 86400000 * 2).toISOString() }
       ]);
       setMenuItems([
         { id: 'm1', name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
-        { id: 'm2', name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioli, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
+        { id: 'm2', name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioi, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
         { id: 'm3', name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true }
       ]);
       setStats({
-        totalOrders: 1482,
         menuItems: 3,
         totalReviews: 856,
         totalMessages: 26,
@@ -412,15 +383,6 @@ export default function AdminDashboard({ onLogout }) {
           </li>
           <li>
             <button 
-              className={`sidebar-item-btn ${activeTab === 'orders' ? 'active' : ''}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              <span className="sidebar-btn-icon-wrapper"><ShoppingCart size={16} /></span>
-              <span className="sidebar-btn-text">Order Telemetry</span>
-            </button>
-          </li>
-          <li>
-            <button 
               className={`sidebar-item-btn ${activeTab === 'menu' ? 'active' : ''}`}
               onClick={() => setActiveTab('menu')}
             >
@@ -468,7 +430,7 @@ export default function AdminDashboard({ onLogout }) {
         <header className="db-header">
           <div className="db-header-title">
             <h1 className="ledger-title">Executive Ledger</h1>
-            <p className="ledger-subtitle">Chai and street eats culinary telemetry console.</p>
+            <p className="ledger-subtitle">Chai and street eats culinary administration console.</p>
           </div>
           <div className="db-header-actions">
             <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '10px 20px', gap: '8px', fontSize: '12px' }}>
@@ -477,39 +439,15 @@ export default function AdminDashboard({ onLogout }) {
           </div>
         </header>
 
-        {/* Live Notification Alert */}
-        <AnimatePresence>
-          {alertOrder && (
-            <motion.div 
-              className="db-alert-banner"
-              initial={{ opacity: 0, y: -20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="db-alert-icon">
-                <Bell size={20} className="bell-glow" />
-              </div>
-              <div className="db-alert-text">
-                <h4>Live Order Broadcast!</h4>
-                <p>Table #{alertOrder.tableNumber} just logged: <strong>{alertOrder.items?.join(', ')}</strong> (Total: ${alertOrder.total?.toFixed(2)})</p>
-              </div>
-              <button onClick={() => setAlertOrder(null)} className="alert-dismiss-btn">
-                <X size={16} />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Stats Row */}
         <section className="db-stats-grid">
           <div className="db-stat-card">
             <div className="db-stat-info">
-              <p className="stat-label">Total Transactions</p>
-              <h3 className="stat-value">{stats.totalOrders}</h3>
+              <p className="stat-label">Subscriber Registry</p>
+              <h3 className="stat-value">{subscribers.length}</h3>
             </div>
             <div className="db-stat-icon">
-              <ShoppingCart size={20} />
+              <Users size={20} />
             </div>
           </div>
 
@@ -558,8 +496,8 @@ export default function AdminDashboard({ onLogout }) {
               <div className="db-panel">
                 <div className="db-panel-header">
                   <div>
-                    <h3>Weekly Volume Telemetry</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chai & street eats consumption velocity</p>
+                    <h3>Guest Engagement Telemetry</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Digital guest engagement & interaction velocity</p>
                   </div>
                   <span className="gold-accent chart-badge">
                     <TrendingUp size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> 
@@ -574,98 +512,47 @@ export default function AdminDashboard({ onLogout }) {
               <div className="db-panel flex flex-col">
                 <div className="db-panel-header">
                   <div>
-                    <h3>The Spiced Hearth</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Active culinary order tickets</p>
+                    <h3>Guest Dispatch Logs</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Recent direct guest inquiries</p>
                   </div>
                 </div>
                 <div className="spiced-hearth-list">
-                  {orders.slice(0, 3).map((ord, i) => (
-                    <div className="spiced-ticket-card" key={ord.id || ord._id || i}>
+                  {messages.slice(0, 3).map((msg, i) => (
+                    <div className="spiced-ticket-card" key={msg.id || msg._id || i}>
                       <div className="ticket-header">
                         <div className="ticket-meta">
-                          <span className="ticket-label">Order Stamp</span>
+                          <span className="ticket-label" style={{ textTransform: 'lowercase', letterSpacing: 'normal' }}>{msg.email}</span>
                           <span className="ticket-time">
-                            <Clock size={11} /> {getTimeAgo(ord.date)}
+                            <Clock size={11} /> {getTimeAgo(msg.date)}
                           </span>
                         </div>
-                        <h4 className="ticket-table">Table #{ord.tableNumber}</h4>
+                        <h4 className="ticket-table" style={{ fontSize: '15px', color: 'var(--color-brass)' }}>{msg.subject || 'Inquiry'}</h4>
                       </div>
                       
-                      <div className="ticket-body">
-                        <p className="ticket-items">{ord.items?.join(', ')}</p>
+                      <div className="ticket-body" style={{ margin: '8px 0 0 0' }}>
+                        <p className="ticket-items" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          "{msg.message}"
+                        </p>
                       </div>
                       
-                      <div className="ticket-divider-jagged"></div>
+                      <div className="ticket-divider-jagged" style={{ margin: '10px 0' }}></div>
                       
                       <div className="ticket-footer">
-                        <span className="ticket-price">${ord.total?.toFixed(2)}</span>
-                        <span className={`db-badge-glowing ${ord.status === 'Completed' ? 'status-completed' : 'status-pending'}`}>
+                        <span className="ticket-price" style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--color-cream-malai)' }}>From: {msg.name}</span>
+                        <span className={`db-badge-glowing status-pending`} style={{ padding: '2px 8px' }}>
                           <span className="badge-pulse-dot"></span>
-                          {ord.status}
+                          Unread
                         </span>
                       </div>
                     </div>
                   ))}
-                  {orders.length === 0 && (
+                  {messages.length === 0 && (
                     <div className="empty-state">
-                      <Coffee size={24} />
-                      <p>Hearth is idle. No pending table orders.</p>
+                      <MessageSquare size={24} />
+                      <p>No inquiries logged in current session.</p>
                     </div>
                   )}
                 </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'orders' && (
-            <motion.div 
-              key="orders-tab"
-              className="db-panel"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="db-panel-header">
-                <div>
-                  <h3>Order Ledger</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chronological record of guest culinary sessions</p>
-                </div>
-              </div>
-              <div className="db-table-wrapper">
-                <table className="db-table">
-                  <thead>
-                    <tr>
-                      <th>Table</th>
-                      <th>Ordered Items</th>
-                      <th>Subtotal</th>
-                      <th>Status</th>
-                      <th>Logged Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="table-empty">No orders logged in current session.</td>
-                      </tr>
-                    ) : (
-                      orders.map((ord, idx) => (
-                        <tr key={ord.id || ord._id || idx}>
-                          <td style={{ fontWeight: 700, fontFamily: 'var(--font-utility)' }}>#{ord.tableNumber}</td>
-                          <td className="table-items-list">{ord.items?.join(', ')}</td>
-                          <td className="gold-accent font-numeric" style={{ fontWeight: 700 }}>${ord.total?.toFixed(2)}</td>
-                          <td>
-                            <span className={`db-badge-glowing ${ord.status === 'Completed' ? 'status-completed' : 'status-pending'}`}>
-                              <span className="badge-pulse-dot"></span>
-                              {ord.status}
-                            </span>
-                          </td>
-                          <td className="font-numeric" style={{ fontSize: '12px' }}>{new Date(ord.date).toLocaleString()}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
               </div>
             </motion.div>
           )}

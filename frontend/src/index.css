@@ -3362,3 +3362,50 @@ textarea.form-control {
     padding: 0 20px;
   }
 }
+
+/* Action Icon Buttons for Admin Tables */
+.table-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.action-icon-btn {
+  background: rgba(16, 10, 9, 0.4);
+  border: 1px solid rgba(253, 251, 247, 0.08);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--color-parchment-gray);
+}
+
+.action-icon-btn.edit-btn {
+  color: var(--color-brass);
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+.action-icon-btn.edit-btn:hover {
+  background-color: rgba(212, 175, 55, 0.12);
+  border-color: var(--color-brass);
+  color: var(--color-cream-malai);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+}
+
+.action-icon-btn.delete-btn {
+  color: #ffb4ab;
+  border-color: rgba(255, 180, 171, 0.2);
+}
+
+.action-icon-btn.delete-btn:hover {
+  background-color: rgba(255, 180, 171, 0.12);
+  border-color: #ffb4ab;
+  color: #ffffff;
+  transform: scale(1.1) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 180, 171, 0.15);
+}
