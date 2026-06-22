@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, ShoppingCart, MessageSquare, Heart, Mail, 
   Menu as MenuIcon, Settings, LogOut, RefreshCw, Bell, Users,
-  Plus, Edit, Trash2, X, Flame
+  Plus, Edit, Trash2, X, Flame, Clock, Coffee, Shield, Activity,
+  Sliders, Calendar, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 import logoImg from '../assets/logo.png';
@@ -42,6 +44,13 @@ export default function AdminDashboard({ onLogout }) {
   const token = localStorage.getItem('adminToken');
   const username = localStorage.getItem('adminUser') || 'Admin User';
 
+  const handleAuthError = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    toast.error('Session expired. Please log in again.');
+    onLogout();
+  };
+
   const fetchDashboardData = async () => {
     if (!token) return;
     setLoading(true);
@@ -50,11 +59,14 @@ export default function AdminDashboard({ onLogout }) {
       const statsRes = await fetch('/api/admin/dashboard-stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (statsRes.status === 401 || statsRes.status === 403) {
+        handleAuthError();
+        return;
+      }
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
         if (statsData.recentOrders && statsData.recentOrders.length > 0) {
-          // If there is a very new order, trigger a live alert notification
           const latest = statsData.recentOrders[0];
           if (latest.status === 'Pending') {
             setAlertOrder(latest);
@@ -66,6 +78,10 @@ export default function AdminDashboard({ onLogout }) {
       const msgRes = await fetch('/api/admin/messages', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (msgRes.status === 401 || msgRes.status === 403) {
+        handleAuthError();
+        return;
+      }
       if (msgRes.ok) {
         const msgData = await msgRes.json();
         setMessages(msgData);
@@ -75,6 +91,10 @@ export default function AdminDashboard({ onLogout }) {
       const orderRes = await fetch('/api/admin/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (orderRes.status === 401 || orderRes.status === 403) {
+        handleAuthError();
+        return;
+      }
       if (orderRes.ok) {
         const orderData = await orderRes.json();
         setOrders(orderData);
@@ -84,6 +104,10 @@ export default function AdminDashboard({ onLogout }) {
       const subRes = await fetch('/api/admin/subscriptions', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (subRes.status === 401 || subRes.status === 403) {
+        handleAuthError();
+        return;
+      }
       if (subRes.ok) {
         const subData = await subRes.json();
         setSubscribers(subData);
@@ -99,17 +123,17 @@ export default function AdminDashboard({ onLogout }) {
       console.error('Error fetching admin data, utilizing fallbacks:', err);
       // Mock fallback data for demo if server is not active
       setMessages([
-        { id: '1', name: 'Aarav Mehta', email: 'aarav.mehta@example.com', subject: 'Catering Enquiry', message: 'Hello, I would like to enquire about catering for a corporate event of 50 people next month. Love your brand style!', date: new Date().toISOString() },
-        { id: '2', name: 'Priya Sharma', email: 'priya@example.com', subject: 'Booking Enquiry', message: 'Do you have availability for a private lounge booking of 15 people this Saturday evening?', date: new Date().toISOString() }
+        { id: '1', name: 'Aarav Mehta', email: 'aarav.mehta@example.com', subject: 'Catering Enquiry', message: 'Hello, I would like to enquire about catering for a corporate event of 50 people next month. Love your brand style!', date: new Date(Date.now() - 3600000 * 2).toISOString() },
+        { id: '2', name: 'Priya Sharma', email: 'priya@example.com', subject: 'Booking Enquiry', message: 'Do you have availability for a private lounge booking of 15 people this Saturday evening?', date: new Date(Date.now() - 3600000 * 5).toISOString() }
       ]);
       setOrders([
-        { id: '1', tableNumber: '12', items: ['Truffle Vada Pav', 'Signature Saffron Chai'], total: 28.50, status: 'Pending', date: new Date().toISOString() },
-        { id: '2', tableNumber: '04', items: ['The Emperor Burger', 'Gunpowder Fries', 'Obsidian Masala Chai'], total: 38.00, status: 'Completed', date: new Date().toISOString() },
-        { id: '3', tableNumber: '09', items: ['Gold-Dust Chicken', 'Truffle Silk Fries'], total: 24.50, status: 'Completed', date: new Date().toISOString() }
+        { id: '1', tableNumber: '12', items: ['Truffle Vada Pav', 'Signature Saffron Chai'], total: 28.50, status: 'Pending', date: new Date(Date.now() - 240000).toISOString() },
+        { id: '2', tableNumber: '04', items: ['The Emperor Burger', 'Gunpowder Fries', 'Obsidian Masala Chai'], total: 38.00, status: 'Completed', date: new Date(Date.now() - 3600000).toISOString() },
+        { id: '3', tableNumber: '09', items: ['Gold-Dust Chicken', 'Truffle Silk Fries'], total: 24.50, status: 'Completed', date: new Date(Date.now() - 7200000).toISOString() }
       ]);
       setSubscribers([
-        { id: '1', email: 'vip-guest@luxury.com', date: new Date().toISOString() },
-        { id: '2', email: 'foodie@bazaar.org', date: new Date().toISOString() }
+        { id: '1', email: 'vip-guest@luxury.com', date: new Date(Date.now() - 86400000).toISOString() },
+        { id: '2', email: 'foodie@bazaar.org', date: new Date(Date.now() - 86400000 * 2).toISOString() }
       ]);
       setMenuItems([
         { id: 'm1', name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
@@ -135,7 +159,6 @@ export default function AdminDashboard({ onLogout }) {
 
   useEffect(() => {
     fetchDashboardData();
-    // Poll every 10 seconds for orders/alerts updates
     const interval = setInterval(fetchDashboardData, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -177,18 +200,23 @@ export default function AdminDashboard({ onLogout }) {
         body: JSON.stringify(payload)
       });
 
+      if (res.status === 401 || res.status === 403) {
+        handleAuthError();
+        return;
+      }
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to save menu item');
       }
 
-      toast.success(isEditing ? 'Menu item updated.' : 'Menu item added.');
+      toast.success(isEditing ? 'Menu recipe updated.' : 'New menu recipe created.');
       setIsMenuModalOpen(false);
       setEditingItem(null);
       fetchDashboardData();
     } catch (err) {
       console.error(err);
-      toast.error(err.message || 'Error occurred while saving.');
+      toast.error(err.message || 'Error occurred while saving recipe.');
     } finally {
       setLoading(false);
     }
@@ -203,6 +231,11 @@ export default function AdminDashboard({ onLogout }) {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (res.status === 401 || res.status === 403) {
+        handleAuthError();
+        return;
+      }
 
       if (!res.ok) throw new Error('Failed to delete menu item');
 
@@ -246,15 +279,28 @@ export default function AdminDashboard({ onLogout }) {
     setIsMenuModalOpen(true);
   };
 
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return 'Just now';
+    const diffMs = new Date() - new Date(dateString);
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins === 1) return '1m ago';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours === 1) return '1h ago';
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return new Date(dateString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
   // Render SVG Chart using WeeklyVolume data
   const renderChart = () => {
     const data = stats.weeklyVolume || [120, 180, 150, 220, 190, 240, 210];
     const width = 600;
     const height = 180;
-    const padding = 25;
+    const padding = 30;
     
     // Scale data
-    const maxVal = Math.max(...data) * 1.1;
+    const maxVal = Math.max(...data) * 1.15;
     const points = data.map((val, index) => {
       const x = padding + (index * (width - (padding * 2)) / (data.length - 1));
       const y = height - padding - (val * (height - (padding * 2)) / maxVal);
@@ -267,11 +313,16 @@ export default function AdminDashboard({ onLogout }) {
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" className="chart-svg-render">
         <defs>
           <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--gold-heritage)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--gold-heritage)" stopOpacity="0.0" />
+            <stop offset="0%" stopColor="var(--color-saffron)" stopOpacity="0.3" />
+            <stop offset="60%" stopColor="var(--color-brass)" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="var(--color-clay-ebony)" stopOpacity="0.0" />
+          </linearGradient>
+          <linearGradient id="line-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-saffron)" />
+            <stop offset="100%" stopColor="var(--color-brass)" />
           </linearGradient>
         </defs>
 
@@ -298,15 +349,23 @@ export default function AdminDashboard({ onLogout }) {
 
         {/* Data points */}
         {points.map((p, i) => (
-          <circle 
-            key={i} 
-            cx={p.x} 
-            cy={p.y} 
-            r={5} 
-            fill="var(--bg-obsidian)" 
-            stroke="var(--gold-vibrant)" 
-            strokeWidth={2} 
-          />
+          <g key={i} className="chart-point-group">
+            <circle 
+              cx={p.x} 
+              cy={p.y} 
+              r={7} 
+              fill="rgba(222, 110, 49, 0.15)"
+              className="chart-point-glow"
+            />
+            <circle 
+              cx={p.x} 
+              cy={p.y} 
+              r={4} 
+              fill="var(--color-clay-ebony)" 
+              stroke="var(--color-brass)" 
+              strokeWidth={2.5} 
+            />
+          </g>
         ))}
 
         {/* X Axis Labels */}
@@ -316,7 +375,7 @@ export default function AdminDashboard({ onLogout }) {
             <text 
               key={i} 
               x={x} 
-              y={height - 5} 
+              y={height - 8} 
               textAnchor="middle" 
               className="chart-label"
             >
@@ -334,8 +393,11 @@ export default function AdminDashboard({ onLogout }) {
       {/* Sidebar Navigation */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" style={{ height: '40px', width: '40px', marginBottom: '8px' }} />
-          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--gold-heritage)', fontWeight: 700 }}>Management Portal</p>
+          <div className="brand-logo-container">
+            <img src={logoImg} alt="Mr. Chai Logo" className="logo-img" />
+          </div>
+          <h2 className="sidebar-brand-name">Mr. Chai</h2>
+          <p className="sidebar-brand-title">Executive Ledger</p>
         </div>
 
         <ul className="sidebar-nav">
@@ -344,8 +406,8 @@ export default function AdminDashboard({ onLogout }) {
               className={`sidebar-item-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
             >
-              <ShoppingCart size={18} />
-              Dashboard
+              <span className="sidebar-btn-icon-wrapper"><Activity size={16} /></span>
+              <span className="sidebar-btn-text">Ledger Summary</span>
             </button>
           </li>
           <li>
@@ -353,8 +415,8 @@ export default function AdminDashboard({ onLogout }) {
               className={`sidebar-item-btn ${activeTab === 'orders' ? 'active' : ''}`}
               onClick={() => setActiveTab('orders')}
             >
-              <ShoppingCart size={18} />
-              Orders Logging
+              <span className="sidebar-btn-icon-wrapper"><ShoppingCart size={16} /></span>
+              <span className="sidebar-btn-text">Order Telemetry</span>
             </button>
           </li>
           <li>
@@ -362,8 +424,8 @@ export default function AdminDashboard({ onLogout }) {
               className={`sidebar-item-btn ${activeTab === 'menu' ? 'active' : ''}`}
               onClick={() => setActiveTab('menu')}
             >
-              <MenuIcon size={18} />
-              Menu Items
+              <span className="sidebar-btn-icon-wrapper"><Coffee size={16} /></span>
+              <span className="sidebar-btn-text">Recipe Catalog</span>
             </button>
           </li>
           <li>
@@ -371,8 +433,9 @@ export default function AdminDashboard({ onLogout }) {
               className={`sidebar-item-btn ${activeTab === 'messages' ? 'active' : ''}`}
               onClick={() => setActiveTab('messages')}
             >
-              <MessageSquare size={18} />
-              Guest Messages ({messages.length})
+              <span className="sidebar-btn-icon-wrapper"><MessageSquare size={16} /></span>
+              <span className="sidebar-btn-text">Guest Heartbeats</span>
+              {messages.length > 0 && <span className="sidebar-badge-count">{messages.length}</span>}
             </button>
           </li>
           <li>
@@ -380,8 +443,9 @@ export default function AdminDashboard({ onLogout }) {
               className={`sidebar-item-btn ${activeTab === 'subscribers' ? 'active' : ''}`}
               onClick={() => setActiveTab('subscribers')}
             >
-              <Users size={18} />
-              Subscribers ({subscribers.length})
+              <span className="sidebar-btn-icon-wrapper"><Users size={16} /></span>
+              <span className="sidebar-btn-text">Subscribers</span>
+              {subscribers.length > 0 && <span className="sidebar-badge-count count-muted">{subscribers.length}</span>}
             </button>
           </li>
         </ul>
@@ -392,7 +456,7 @@ export default function AdminDashboard({ onLogout }) {
             <p className="gold-accent">Administrator</p>
           </div>
           <button onClick={handleLogoutClick} className="sidebar-logout-btn" title="Logout">
-            <LogOut size={18} />
+            <LogOut size={16} />
           </button>
         </div>
       </aside>
@@ -403,425 +467,524 @@ export default function AdminDashboard({ onLogout }) {
         {/* Header */}
         <header className="db-header">
           <div className="db-header-title">
-            <h1>Executive Dashboard</h1>
-            <p>Real-time analytics and management operations.</p>
+            <h1 className="ledger-title">Executive Ledger</h1>
+            <p className="ledger-subtitle">Chai and street eats culinary telemetry console.</p>
           </div>
-          <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '8px 16px', gap: '6px', fontSize: '12px' }}>
-            <RefreshCw size={14} /> Refresh Logs
-          </button>
+          <div className="db-header-actions">
+            <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '10px 20px', gap: '8px', fontSize: '12px' }}>
+              <RefreshCw size={14} className={loading ? 'spin-icon' : ''} /> Synchronize Metrics
+            </button>
+          </div>
         </header>
 
         {/* Live Notification Alert */}
-        {alertOrder && (
-          <div className="db-alert-banner">
-            <div className="db-alert-icon">
-              <Bell size={24} />
-            </div>
-            <div className="db-alert-text">
-              <h4>New Order Alert!</h4>
-              <p>Table #{alertOrder.tableNumber} just ordered: {alertOrder.items?.join(', ')} (Total: ${alertOrder.total?.toFixed(2)})</p>
-            </div>
-            <button onClick={() => setAlertOrder(null)} className="btn-tertiary" style={{ marginLeft: 'auto', border: 'none', background: 'none', color: 'var(--gold-heritage)', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}>
-              Dismiss
-            </button>
-          </div>
-        )}
+        <AnimatePresence>
+          {alertOrder && (
+            <motion.div 
+              className="db-alert-banner"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-alert-icon">
+                <Bell size={20} className="bell-glow" />
+              </div>
+              <div className="db-alert-text">
+                <h4>Live Order Broadcast!</h4>
+                <p>Table #{alertOrder.tableNumber} just logged: <strong>{alertOrder.items?.join(', ')}</strong> (Total: ${alertOrder.total?.toFixed(2)})</p>
+              </div>
+              <button onClick={() => setAlertOrder(null)} className="alert-dismiss-btn">
+                <X size={16} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Stats Row */}
         <section className="db-stats-grid">
           <div className="db-stat-card">
             <div className="db-stat-info">
-              <p>Total Orders</p>
-              <h3>{stats.totalOrders}</h3>
+              <p className="stat-label">Total Transactions</p>
+              <h3 className="stat-value">{stats.totalOrders}</h3>
             </div>
             <div className="db-stat-icon">
-              <ShoppingCart size={24} />
+              <ShoppingCart size={20} />
             </div>
           </div>
 
           <div className="db-stat-card">
             <div className="db-stat-info">
-              <p>Menu Catalog</p>
-              <h3>{stats.menuItems} Items</h3>
+              <p className="stat-label">Recipe Catalog</p>
+              <h3 className="stat-value">{stats.menuItems} <span className="stat-subtext">Items</span></h3>
             </div>
             <div className="db-stat-icon">
-              <MenuIcon size={24} />
+              <Coffee size={20} />
             </div>
           </div>
 
           <div className="db-stat-card">
             <div className="db-stat-info">
-              <p>Guest Reviews</p>
-              <h3>{stats.totalReviews}</h3>
+              <p className="stat-label">Guest Appreciations</p>
+              <h3 className="stat-value">{stats.totalReviews}</h3>
             </div>
             <div className="db-stat-icon">
-              <Heart size={24} />
+              <Heart size={20} />
             </div>
           </div>
 
           <div className="db-stat-card">
             <div className="db-stat-info">
-              <p>Messages Log</p>
-              <h3>{stats.totalMessages}</h3>
+              <p className="stat-label">Inquiry Logs</p>
+              <h3 className="stat-value">{stats.totalMessages}</h3>
             </div>
             <div className="db-stat-icon">
-              <MessageSquare size={24} />
+              <MessageSquare size={20} />
             </div>
           </div>
         </section>
 
         {/* Tab Switchers */}
-        {activeTab === 'dashboard' && (
-          <div className="db-content-grid">
-            <div className="db-panel">
-              <div className="db-panel-header">
-                <h3>Weekly Order Volume</h3>
-                <span className="gold-accent" style={{ fontSize: '12px', fontWeight: 700 }}><TrendingUp size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> +12% this week</span>
-              </div>
-              <div className="db-chart-container">
-                {renderChart()}
-              </div>
-            </div>
-
-            <div className="db-panel">
-              <div className="db-panel-header">
-                <h3>Recent Live Activity</h3>
-              </div>
-              <div className="db-list">
-                {orders.slice(0, 3).map((ord, i) => (
-                  <div className="db-list-item" key={ord.id || ord._id || i}>
-                    <div className="db-list-item-content">
-                      <h4>Table #{ord.tableNumber}</h4>
-                      <p>{ord.items?.join(', ')}</p>
-                    </div>
-                    <span className={`db-badge ${ord.status === 'Completed' ? 'db-badge-completed' : 'db-badge-pending'}`}>
-                      {ord.status}
-                    </span>
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && (
+            <motion.div 
+              key="dashboard-tab"
+              className="db-content-grid"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel">
+                <div className="db-panel-header">
+                  <div>
+                    <h3>Weekly Volume Telemetry</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chai & street eats consumption velocity</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'orders' && (
-          <div className="db-panel">
-            <div className="db-panel-header">
-              <h3>Live Table Order Logs</h3>
-            </div>
-            <div className="db-table-wrapper">
-              <table className="db-table">
-                <thead>
-                  <tr>
-                    <th>Table</th>
-                    <th>Ordered Items</th>
-                    <th>Subtotal</th>
-                    <th>Status</th>
-                    <th>Logged Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '24px' }}>No orders logged yet. Place an order on the landing page!</td>
-                    </tr>
-                  ) : (
-                    orders.map((ord, idx) => (
-                      <tr key={ord.id || ord._id || idx}>
-                        <td style={{ fontWeight: 700 }}>#{ord.tableNumber}</td>
-                        <td>{ord.items?.join(', ')}</td>
-                        <td className="gold-accent" style={{ fontWeight: 700 }}>${ord.total?.toFixed(2)}</td>
-                        <td>
-                          <span className={`db-badge ${ord.status === 'Completed' ? 'db-badge-completed' : 'db-badge-pending'}`}>
-                            {ord.status}
-                          </span>
-                        </td>
-                        <td>{new Date(ord.date).toLocaleString()}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'menu' && (
-          <div className="db-panel">
-            <div className="db-panel-header" style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
-              <h3>Menu Catalog Management</h3>
-              <button className="btn btn-primary" onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '13px' }}>
-                <Plus size={16} /> Add New Item
-              </button>
-            </div>
-            <div className="db-table-wrapper">
-              <table className="db-table">
-                <thead>
-                  <tr>
-                    <th>Menu Item</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Unit Price</th>
-                    <th>Spice</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {menuItems.length === 0 ? (
-                    <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>No menu items found.</td>
-                    </tr>
-                  ) : (
-                    menuItems.map((item, idx) => (
-                      <tr key={item._id || item.id || idx}>
-                        <td>
-                          <div style={{ fontWeight: 700 }}>{item.name}</div>
-                          {item.badge && <span className="db-badge-tag">{item.badge}</span>}
-                        </td>
-                        <td>{item.category}</td>
-                        <td style={{ maxWidth: '280px', whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '13px' }}>
-                          {item.description}
-                        </td>
-                        <td className="gold-accent" style={{ fontWeight: 700 }}>${parseFloat(item.price).toFixed(2)}</td>
-                        <td>
-                          {item.spiceLevel > 0 ? (
-                            <span className="flex" style={{ color: 'var(--gold-heritage)', gap: '1px' }}>
-                              {[...Array(item.spiceLevel)].map((_, i) => (
-                                <Flame key={i} size={14} className="fill-gold stroke-gold" />
-                              ))}
-                            </span>
-                          ) : (
-                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>None</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`db-badge ${item.available ? 'db-badge-completed' : 'db-badge-pending'}`}>
-                            {item.available ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                            <button 
-                              className="btn btn-secondary" 
-                              onClick={() => openEditModal(item)}
-                              style={{ padding: '6px 10px', minWidth: 'auto' }}
-                              title="Edit"
-                            >
-                              <Edit size={14} />
-                            </button>
-                            <button 
-                              className="btn btn-secondary" 
-                              onClick={() => handleDeleteMenu(item._id || item.id)}
-                              style={{ padding: '6px 10px', minWidth: 'auto', color: '#ff4444', borderColor: 'rgba(255, 68, 68, 0.2)' }}
-                              title="Delete"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Modal Overlay for Add/Edit Menu Item */}
-            {isMenuModalOpen && (
-              <div className="db-modal-overlay">
-                <div className="db-modal-card">
-                  <div className="db-modal-header">
-                    <h3>{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h3>
-                    <button className="db-modal-close" onClick={() => setIsMenuModalOpen(false)}>
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <form onSubmit={handleAddOrEditMenu} className="db-modal-form">
-                    <div className="form-group-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Item Name *</label>
-                        <input 
-                          type="text" 
-                          value={menuForm.name} 
-                          onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
-                          required 
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        />
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Category *</label>
-                        <select 
-                          value={menuForm.category} 
-                          onChange={(e) => setMenuForm({ ...menuForm, category: e.target.value })}
-                          required
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        >
-                          <option value="Drinks" style={{ background: '#0a0a0a' }}>Drinks</option>
-                          <option value="Street Eats" style={{ background: '#0a0a0a' }}>Street Eats</option>
-                          <option value="Delights" style={{ background: '#0a0a0a' }}>Delights</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-group-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Price ($) *</label>
-                        <input 
-                          type="number" 
-                          step="0.01" 
-                          value={menuForm.price} 
-                          onChange={(e) => setMenuForm({ ...menuForm, price: e.target.value })}
-                          required 
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        />
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Badge (e.g. Legendary)</label>
-                        <input 
-                          type="text" 
-                          placeholder="Chef Special, Bestseller..." 
-                          value={menuForm.badge} 
-                          onChange={(e) => setMenuForm({ ...menuForm, badge: e.target.value })}
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Image Key / URL</label>
-                        <input 
-                          type="text" 
-                          placeholder="obsidian_chai, emperor_burger..." 
-                          value={menuForm.image} 
-                          onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        />
-                      </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Spice Level (0 to 3)</label>
-                        <select 
-                          value={menuForm.spiceLevel} 
-                          onChange={(e) => setMenuForm({ ...menuForm, spiceLevel: parseInt(e.target.value) })}
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff' }}
-                        >
-                          <option value="0" style={{ background: '#0a0a0a' }}>0 - Non-Spicy</option>
-                          <option value="1" style={{ background: '#0a0a0a' }}>1 - Mild</option>
-                          <option value="2" style={{ background: '#0a0a0a' }}>2 - Medium</option>
-                          <option value="3" style={{ background: '#0a0a0a' }}>3 - Spicy</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: '16px' }}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Description *</label>
-                      <textarea 
-                        rows="3" 
-                        value={menuForm.description} 
-                        onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
-                        required
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid rgba(212, 175, 55, 0.2)', backgroundColor: 'rgba(255, 255, 255, 0.03)', color: '#fff', resize: 'vertical' }}
-                      ></textarea>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: '24px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={menuForm.available} 
-                          onChange={(e) => setMenuForm({ ...menuForm, available: e.target.checked })}
-                          style={{ accentColor: 'var(--gold-heritage)' }}
-                        />
-                        <span>Item is available for orders</span>
-                      </label>
-                    </div>
-
-                    <div className="db-modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                      <button type="button" className="btn btn-secondary" onClick={() => setIsMenuModalOpen(false)}>
-                        Cancel
-                      </button>
-                      <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Saving...' : 'Save Item'}
-                      </button>
-                    </div>
-                  </form>
+                  <span className="gold-accent chart-badge">
+                    <TrendingUp size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> 
+                    +12% vs last cycle
+                  </span>
+                </div>
+                <div className="db-chart-container">
+                  {renderChart()}
                 </div>
               </div>
-            )}
-          </div>
-        )}
 
-        {activeTab === 'messages' && (
-          <div className="db-panel">
-            <div className="db-panel-header">
-              <h3>Guest Inquiry Logs (MongoDB)</h3>
-            </div>
-            <div className="db-table-wrapper">
-              <table className="db-table">
-                <thead>
-                  <tr>
-                    <th>Guest Details</th>
-                    <th>Subject</th>
-                    <th>Message Details</th>
-                    <th>Received Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {messages.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: 'center', padding: '24px' }}>No guest messages logged in database yet.</td>
-                    </tr>
-                  ) : (
-                    messages.map((msg, idx) => (
-                      <tr key={msg.id || msg._id || idx}>
-                        <td>
-                          <div style={{ fontWeight: 700 }}>{msg.name}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{msg.email}</div>
-                        </td>
-                        <td style={{ fontWeight: 700 }} className="gold-accent">{msg.subject}</td>
-                        <td style={{ maxWidth: '400px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{msg.message}</td>
-                        <td>{new Date(msg.date).toLocaleString()}</td>
-                      </tr>
-                    ))
+              <div className="db-panel flex flex-col">
+                <div className="db-panel-header">
+                  <div>
+                    <h3>The Spiced Hearth</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Active culinary order tickets</p>
+                  </div>
+                </div>
+                <div className="spiced-hearth-list">
+                  {orders.slice(0, 3).map((ord, i) => (
+                    <div className="spiced-ticket-card" key={ord.id || ord._id || i}>
+                      <div className="ticket-header">
+                        <div className="ticket-meta">
+                          <span className="ticket-label">Order Stamp</span>
+                          <span className="ticket-time">
+                            <Clock size={11} /> {getTimeAgo(ord.date)}
+                          </span>
+                        </div>
+                        <h4 className="ticket-table">Table #{ord.tableNumber}</h4>
+                      </div>
+                      
+                      <div className="ticket-body">
+                        <p className="ticket-items">{ord.items?.join(', ')}</p>
+                      </div>
+                      
+                      <div className="ticket-divider-jagged"></div>
+                      
+                      <div className="ticket-footer">
+                        <span className="ticket-price">${ord.total?.toFixed(2)}</span>
+                        <span className={`db-badge-glowing ${ord.status === 'Completed' ? 'status-completed' : 'status-pending'}`}>
+                          <span className="badge-pulse-dot"></span>
+                          {ord.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {orders.length === 0 && (
+                    <div className="empty-state">
+                      <Coffee size={24} />
+                      <p>Hearth is idle. No pending table orders.</p>
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-        {activeTab === 'subscribers' && (
-          <div className="db-panel">
-            <div className="db-panel-header">
-              <h3>Newsletter Subscriptions Log</h3>
-            </div>
-            <div className="db-table-wrapper">
-              <table className="db-table">
-                <thead>
-                  <tr>
-                    <th>Email Address</th>
-                    <th>Subscription Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscribers.length === 0 ? (
+          {activeTab === 'orders' && (
+            <motion.div 
+              key="orders-tab"
+              className="db-panel"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel-header">
+                <div>
+                  <h3>Order Ledger</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chronological record of guest culinary sessions</p>
+                </div>
+              </div>
+              <div className="db-table-wrapper">
+                <table className="db-table">
+                  <thead>
                     <tr>
-                      <td colSpan="2" style={{ textAlign: 'center', padding: '24px' }}>No subscribers logged yet.</td>
+                      <th>Table</th>
+                      <th>Ordered Items</th>
+                      <th>Subtotal</th>
+                      <th>Status</th>
+                      <th>Logged Date</th>
                     </tr>
-                  ) : (
-                    subscribers.map((sub, idx) => (
-                      <tr key={sub.id || sub._id || idx}>
-                        <td style={{ fontWeight: 700 }} className="gold-accent">{sub.email}</td>
-                        <td>{new Date(sub.date).toLocaleString()}</td>
+                  </thead>
+                  <tbody>
+                    {orders.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="table-empty">No orders logged in current session.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      orders.map((ord, idx) => (
+                        <tr key={ord.id || ord._id || idx}>
+                          <td style={{ fontWeight: 700, fontFamily: 'var(--font-utility)' }}>#{ord.tableNumber}</td>
+                          <td className="table-items-list">{ord.items?.join(', ')}</td>
+                          <td className="gold-accent font-numeric" style={{ fontWeight: 700 }}>${ord.total?.toFixed(2)}</td>
+                          <td>
+                            <span className={`db-badge-glowing ${ord.status === 'Completed' ? 'status-completed' : 'status-pending'}`}>
+                              <span className="badge-pulse-dot"></span>
+                              {ord.status}
+                            </span>
+                          </td>
+                          <td className="font-numeric" style={{ fontSize: '12px' }}>{new Date(ord.date).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'menu' && (
+            <motion.div 
+              key="menu-tab"
+              className="db-panel"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel-header flex-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3>Recipe Catalog</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Curate the luxury selection of Mr. Chai flavors</p>
+                </div>
+                <button className="btn btn-primary" onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
+                  <Plus size={14} /> Add New Recipe
+                </button>
+              </div>
+              <div className="db-table-wrapper">
+                <table className="db-table">
+                  <thead>
+                    <tr>
+                      <th>Menu Item</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th>Unit Price</th>
+                      <th>Spice Index</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {menuItems.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="table-empty">Catalog is currently empty. Add a recipe to begin.</td>
+                      </tr>
+                    ) : (
+                      menuItems.map((item, idx) => (
+                        <tr key={item._id || item.id || idx}>
+                          <td>
+                            <div className="table-item-title">{item.name}</div>
+                            {item.badge && <span className="db-badge-tag">{item.badge}</span>}
+                          </td>
+                          <td className="category-cell">{item.category}</td>
+                          <td className="description-cell">
+                            {item.description}
+                          </td>
+                          <td className="gold-accent font-numeric" style={{ fontWeight: 700 }}>${parseFloat(item.price).toFixed(2)}</td>
+                          <td>
+                            {item.spiceLevel > 0 ? (
+                              <span className="flex spice-flames" style={{ display: 'flex', color: 'var(--color-saffron)', gap: '2px' }}>
+                                {[...Array(item.spiceLevel)].map((_, i) => (
+                                  <Flame key={i} size={13} className="fill-gold stroke-gold" />
+                                ))}
+                              </span>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontFamily: 'var(--font-utility)' }}>MILD</span>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`db-badge-glowing ${item.available ? 'status-completed' : 'status-pending'}`}>
+                              <span className="badge-pulse-dot"></span>
+                              {item.available ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="table-action-buttons">
+                              <button 
+                                className="action-icon-btn edit-btn" 
+                                onClick={() => openEditModal(item)}
+                                title="Edit Recipe"
+                              >
+                                <Edit size={13} />
+                              </button>
+                              <button 
+                                className="action-icon-btn delete-btn" 
+                                onClick={() => handleDeleteMenu(item._id || item.id)}
+                                title="Delete Recipe"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'messages' && (
+            <motion.div 
+              key="messages-tab"
+              className="db-panel"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel-header">
+                <div>
+                  <h3>Guest Heartbeats</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Direct feedback and inquiries logged from the web terminal</p>
+                </div>
+              </div>
+              <div className="db-table-wrapper">
+                <table className="db-table">
+                  <thead>
+                    <tr>
+                      <th>Guest Details</th>
+                      <th>Subject</th>
+                      <th>Message Details</th>
+                      <th>Received Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {messages.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="table-empty">No inquiry logs stored.</td>
+                      </tr>
+                    ) : (
+                      messages.map((msg, idx) => (
+                        <tr key={msg.id || msg._id || idx}>
+                          <td>
+                            <div className="table-item-title">{msg.name}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-utility)' }}>{msg.email}</div>
+                          </td>
+                          <td style={{ fontWeight: 700 }} className="gold-accent">{msg.subject}</td>
+                          <td className="message-content-cell">{msg.message}</td>
+                          <td className="font-numeric" style={{ fontSize: '12px' }}>{new Date(msg.date).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'subscribers' && (
+            <motion.div 
+              key="subscribers-tab"
+              className="db-panel"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel-header">
+                <div>
+                  <h3>Subscribers Log</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Newsletter and flavor dispatch subscriptions</p>
+                </div>
+              </div>
+              <div className="db-table-wrapper">
+                <table className="db-table">
+                  <thead>
+                    <tr>
+                      <th>Email Address</th>
+                      <th>Subscription Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscribers.length === 0 ? (
+                      <tr>
+                        <td colSpan="2" className="table-empty">No newsletter subscribers logged.</td>
+                      </tr>
+                    ) : (
+                      subscribers.map((sub, idx) => (
+                        <tr key={sub.id || sub._id || idx}>
+                          <td style={{ fontWeight: 700 }} className="gold-accent">{sub.email}</td>
+                          <td className="font-numeric">{new Date(sub.date).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Modal Overlay for Add/Edit Menu Item */}
+        <AnimatePresence>
+          {isMenuModalOpen && (
+            <div className="db-modal-overlay">
+              <motion.div 
+                className="db-modal-card"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, cubicBezier: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="db-modal-header">
+                  <h3>{editingItem ? 'Refine Recipe' : 'Inscribe New Recipe'}</h3>
+                  <button className="db-modal-close" onClick={() => setIsMenuModalOpen(false)}>
+                    <X size={16} />
+                  </button>
+                </div>
+                <form onSubmit={handleAddOrEditMenu} className="db-modal-form">
+                  <div className="form-group-row">
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Recipe Title *</label>
+                      <input 
+                        type="text" 
+                        value={menuForm.name} 
+                        onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
+                        required 
+                        className="alchemist-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Category *</label>
+                      <select 
+                        value={menuForm.category} 
+                        onChange={(e) => setMenuForm({ ...menuForm, category: e.target.value })}
+                        required
+                        className="alchemist-input alchemist-select"
+                      >
+                        <option value="Drinks">Drinks</option>
+                        <option value="Street Eats">Street Eats</option>
+                        <option value="Delights">Delights</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group-row">
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Unit Value ($) *</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={menuForm.price} 
+                        onChange={(e) => setMenuForm({ ...menuForm, price: e.target.value })}
+                        required 
+                        className="alchemist-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Catalog Badge (e.g. Legendary)</label>
+                      <input 
+                        type="text" 
+                        placeholder="Chef Special, Bestseller..." 
+                        value={menuForm.badge} 
+                        onChange={(e) => setMenuForm({ ...menuForm, badge: e.target.value })}
+                        className="alchemist-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group-row">
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Asset Image Key</label>
+                      <input 
+                        type="text" 
+                        placeholder="obsidian_chai, emperor_burger..." 
+                        value={menuForm.image} 
+                        onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
+                        className="alchemist-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Spice Intensity Level</label>
+                      <select 
+                        value={menuForm.spiceLevel} 
+                        onChange={(e) => setMenuForm({ ...menuForm, spiceLevel: parseInt(e.target.value) })}
+                        className="alchemist-input alchemist-select"
+                      >
+                        <option value="0">0 - Sweet / Mild</option>
+                        <option value="1">1 - Flame Accent</option>
+                        <option value="2">2 - Double Flame</option>
+                        <option value="3">3 - Intense Heat</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="alchemist-form-label">Culinary Description *</label>
+                    <textarea 
+                      rows="3" 
+                      value={menuForm.description} 
+                      onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
+                      required
+                      className="alchemist-input alchemist-textarea"
+                    ></textarea>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '24px' }}>
+                    <label className="alchemist-checkbox-container">
+                      <input 
+                        type="checkbox" 
+                        checked={menuForm.available} 
+                        onChange={(e) => setMenuForm({ ...menuForm, available: e.target.checked })}
+                        className="alchemist-checkbox-native"
+                      />
+                      <span className="alchemist-checkbox-custom"></span>
+                      <span className="checkbox-label-text">Inscribe as active in customer menu</span>
+                    </label>
+                  </div>
+
+                  <div className="db-modal-actions">
+                    <button type="button" className="btn btn-secondary" onClick={() => setIsMenuModalOpen(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                      {loading ? 'Inscribing...' : 'Save Recipe'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
 
       </main>
     </div>
