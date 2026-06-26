@@ -3,7 +3,7 @@
 A premium, modern web application for **Mr. Chai**, a luxury tea house and street food restaurant. Built as a full-stack monorepo featuring a responsive React frontend, an Express backend, JWT authentication, a database with local JSON file fallback for resilience, and a complete Admin Dashboard to manage menu items, view customer inquiries, subscriptions, and track orders.
 
 ## 🔗 Live Demo
-* **Deployed URL:** [Live Link]() (Add your Vercel URL here)
+* **Deployed URL:** https://mr-chai-restaurant-g2ac.vercel.app
 
 ---
 
