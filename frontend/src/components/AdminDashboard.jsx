@@ -4,11 +4,32 @@ import {
   TrendingUp, ShoppingCart, MessageSquare, Heart, Mail, 
   Menu as MenuIcon, Settings, LogOut, RefreshCw, Bell, Users,
   Plus, Edit, Trash2, X, Flame, Clock, Coffee, Shield, Activity,
-  Sliders, Calendar, CheckCircle2, AlertCircle
+  Sliders, Calendar, CheckCircle2, AlertCircle, Image
 } from 'lucide-react';
 
 import logoImg from '../assets/logo.png';
 import { toast } from 'sonner';
+
+import emperorBurger from '../assets/emperor_burger.png';
+import obsidianChai from '../assets/obsidian_chai.png';
+import gunpowderFries from '../assets/gunpowder_fries.png';
+import heroChai from '../assets/hero_chai.png';
+import mrChaiAmbiance from '../assets/mr_chai_ambiance.png';
+import saffronCheesecake from '../assets/saffron_cheesecake.png';
+
+const localImages = {
+  emperor_burger: emperorBurger,
+  obsidian_chai: obsidianChai,
+  gunpowder_fries: gunpowderFries,
+  hero_chai: heroChai,
+  mr_chai_ambiance: mrChaiAmbiance,
+  saffron_cheesecake: saffronCheesecake
+};
+
+const getImageUrl = (imageKey) => {
+  if (localImages[imageKey]) return localImages[imageKey];
+  return imageKey; // Base64 or http URL
+};
 
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -21,6 +42,7 @@ export default function AdminDashboard({ onLogout }) {
   const [messages, setMessages] = useState([]);
   const [subscribers, setSubscribers] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Menu form & modal states
@@ -35,6 +57,17 @@ export default function AdminDashboard({ onLogout }) {
     image: '',
     spiceLevel: 0,
     available: true
+  });
+
+  // Gallery form & modal states
+  const [editingGalleryItem, setEditingGalleryItem] = useState(null);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [galleryForm, setGalleryForm] = useState({
+    title: '',
+    category: 'Dishes',
+    image: '',
+    sizeClass: 'standard',
+    desc: ''
   });
 
   const token = localStorage.getItem('adminToken');
@@ -96,6 +129,13 @@ export default function AdminDashboard({ onLogout }) {
         const menuData = await menuRes.json();
         setMenuItems(menuData);
       }
+
+      // Fetch gallery items
+      const galleryRes = await fetch('/api/gallery');
+      if (galleryRes.ok) {
+        const galleryData = await galleryRes.json();
+        setGalleryItems(galleryData);
+      }
     } catch (err) {
       console.error('Error fetching admin data, utilizing fallbacks:', err);
       // Mock fallback data for demo if server is not active
@@ -111,6 +151,10 @@ export default function AdminDashboard({ onLogout }) {
         { id: 'm1', name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
         { id: 'm2', name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioi, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
         { id: 'm3', name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true }
+      ]);
+      setGalleryItems([
+        { id: 'g1', title: 'The Emperor Burger', category: 'Dishes', image: 'emperor_burger', sizeClass: 'tall', desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.' },
+        { id: 'g2', title: 'Obsidian Masala Chai', category: 'Drinks', image: 'obsidian_chai', sizeClass: 'standard', desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.' }
       ]);
       setStats({
         menuItems: 3,
@@ -217,6 +261,115 @@ export default function AdminDashboard({ onLogout }) {
       toast.error('Error occurred while deleting.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddOrEditGallery = async (e) => {
+    e.preventDefault();
+    if (!galleryForm.title || !galleryForm.category || !galleryForm.desc || !galleryForm.image) {
+      toast.error('Please fill in all fields and provide an image.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const isEditing = editingGalleryItem && (editingGalleryItem._id || editingGalleryItem.id);
+      const url = isEditing
+        ? `/api/admin/gallery/${editingGalleryItem._id || editingGalleryItem.id}`
+        : '/api/admin/gallery';
+      
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(galleryForm)
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        handleAuthError();
+        return;
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to save gallery item');
+      }
+
+      toast.success(isEditing ? 'Gallery canvas item updated.' : 'New gallery canvas item added.');
+      setIsGalleryModalOpen(false);
+      setEditingGalleryItem(null);
+      fetchDashboardData();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Error occurred while saving gallery item.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteGallery = async (itemId) => {
+    if (!window.confirm('Are you sure you want to delete this gallery item?')) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/gallery/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        handleAuthError();
+        return;
+      }
+
+      if (!res.ok) throw new Error('Failed to delete gallery item');
+
+      toast.success('Gallery item deleted successfully.');
+      fetchDashboardData();
+    } catch (err) {
+      console.error(err);
+      toast.error('Error occurred while deleting gallery item.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openAddGalleryModal = () => {
+    setEditingGalleryItem(null);
+    setGalleryForm({
+      title: '',
+      category: 'Dishes',
+      image: '',
+      sizeClass: 'standard',
+      desc: ''
+    });
+    setIsGalleryModalOpen(true);
+  };
+
+  const openEditGalleryModal = (item) => {
+    setEditingGalleryItem(item);
+    setGalleryForm({
+      title: item.title || '',
+      category: item.category || 'Dishes',
+      image: item.image || '',
+      sizeClass: item.sizeClass || 'standard',
+      desc: item.desc || ''
+    });
+    setIsGalleryModalOpen(true);
+  };
+
+  const handleGalleryImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setGalleryForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -408,6 +561,16 @@ export default function AdminDashboard({ onLogout }) {
               <span className="sidebar-btn-icon-wrapper"><Users size={16} /></span>
               <span className="sidebar-btn-text">Subscribers</span>
               {subscribers.length > 0 && <span className="sidebar-badge-count count-muted">{subscribers.length}</span>}
+            </button>
+          </li>
+          <li>
+            <button 
+              className={`sidebar-item-btn ${activeTab === 'gallery' ? 'active' : ''}`}
+              onClick={() => setActiveTab('gallery')}
+            >
+              <span className="sidebar-btn-icon-wrapper"><Image size={16} /></span>
+              <span className="sidebar-btn-text">Gallery Canvas</span>
+              {galleryItems.length > 0 && <span className="sidebar-badge-count count-muted">{galleryItems.length}</span>}
             </button>
           </li>
         </ul>
@@ -739,6 +902,95 @@ export default function AdminDashboard({ onLogout }) {
               </div>
             </motion.div>
           )}
+
+          {activeTab === 'gallery' && (
+            <motion.div 
+              key="gallery-tab"
+              className="db-panel"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="db-panel-header flex-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3>Gallery Canvas</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Manage the visual art portfolio of Mr. Chai restaurant and ambiance</p>
+                </div>
+                <button className="btn btn-primary" onClick={openAddGalleryModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
+                  <Plus size={14} /> Add New Canvas
+                </button>
+              </div>
+              <div className="db-table-wrapper">
+                <table className="db-table">
+                  <thead>
+                    <tr>
+                      <th>Preview</th>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>Size Layout</th>
+                      <th>Description</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {galleryItems.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="table-empty">Gallery Canvas is empty. Upload canvas images to display them in the customer gallery.</td>
+                      </tr>
+                    ) : (
+                      galleryItems.map((item, idx) => (
+                        <tr key={item._id || item.id || idx}>
+                          <td style={{ width: '80px' }}>
+                            <div className="table-preview-img-wrapper" style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--color-clay-ebony)' }}>
+                              <img 
+                                src={getImageUrl(item.image)} 
+                                alt={item.title} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => {
+                                  e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=120&auto=format&fit=crop&q=60';
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="table-item-title">{item.title}</div>
+                          </td>
+                          <td className="category-cell">{item.category}</td>
+                          <td>
+                            <span className="db-badge-tag" style={{ textTransform: 'capitalize' }}>
+                              {item.sizeClass || 'standard'}
+                            </span>
+                          </td>
+                          <td className="description-cell">
+                            {item.desc}
+                          </td>
+                          <td>
+                            <div className="table-action-buttons">
+                              <button 
+                                className="action-icon-btn edit-btn" 
+                                onClick={() => openEditGalleryModal(item)}
+                                title="Edit Canvas"
+                              >
+                                <Edit size={13} />
+                              </button>
+                              <button 
+                                className="action-icon-btn delete-btn" 
+                                onClick={() => handleDeleteGallery(item._id || item.id)}
+                                title="Delete Canvas"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Modal Overlay for Add/Edit Menu Item */}
@@ -865,6 +1117,124 @@ export default function AdminDashboard({ onLogout }) {
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={loading}>
                       {loading ? 'Inscribing...' : 'Save Recipe'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Modal Overlay for Add/Edit Gallery Item */}
+        <AnimatePresence>
+          {isGalleryModalOpen && (
+            <div className="db-modal-overlay">
+              <motion.div 
+                className="db-modal-card"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, cubicBezier: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="db-modal-header">
+                  <h3>{editingGalleryItem ? 'Refine Canvas Item' : 'Publish New Canvas Item'}</h3>
+                  <button className="db-modal-close" onClick={() => setIsGalleryModalOpen(false)}>
+                    <X size={16} />
+                  </button>
+                </div>
+                <form onSubmit={handleAddOrEditGallery} className="db-modal-form">
+                  <div className="form-group-row">
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Canvas Title *</label>
+                      <input 
+                        type="text" 
+                        value={galleryForm.title} 
+                        onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
+                        required 
+                        className="alchemist-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Category *</label>
+                      <select 
+                        value={galleryForm.category} 
+                        onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
+                        required
+                        className="alchemist-input alchemist-select"
+                      >
+                        <option value="Dishes">Dishes</option>
+                        <option value="Drinks">Drinks</option>
+                        <option value="Ambiance">Ambiance</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group-row">
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Size Layout *</label>
+                      <select 
+                        value={galleryForm.sizeClass} 
+                        onChange={(e) => setGalleryForm({ ...galleryForm, sizeClass: e.target.value })}
+                        required
+                        className="alchemist-input alchemist-select"
+                      >
+                        <option value="standard">Standard (Square/Balanced)</option>
+                        <option value="tall">Tall (Portrait-oriented)</option>
+                        <option value="wide">Wide (Landscape-oriented)</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="alchemist-form-label">Asset Image Key / URL</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. emperor_burger or HTTP URL" 
+                        value={galleryForm.image.startsWith('data:') ? 'Base64 Encoded Image' : galleryForm.image} 
+                        onChange={(e) => setGalleryForm({ ...galleryForm, image: e.target.value })}
+                        className="alchemist-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label className="alchemist-form-label">Or Upload Custom Image File</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleGalleryImageChange}
+                      className="alchemist-input"
+                      style={{ padding: '8px' }}
+                    />
+                    {galleryForm.image && (
+                      <div style={{ marginTop: '10px', width: '100px', height: '100px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                        <img 
+                          src={getImageUrl(galleryForm.image)}
+                          alt="Upload Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=120&auto=format&fit=crop&q=60';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="alchemist-form-label">Description *</label>
+                    <textarea 
+                      rows="3" 
+                      value={galleryForm.desc} 
+                      onChange={(e) => setGalleryForm({ ...galleryForm, desc: e.target.value })}
+                      required
+                      className="alchemist-input alchemist-textarea"
+                    ></textarea>
+                  </div>
+
+                  <div className="db-modal-actions">
+                    <button type="button" className="btn btn-secondary" onClick={() => setIsGalleryModalOpen(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                      {loading ? 'Publishing...' : 'Publish Canvas'}
                     </button>
                   </div>
                 </form>

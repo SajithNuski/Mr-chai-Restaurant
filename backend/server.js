@@ -99,15 +99,27 @@ const menuItemSchema = new mongoose.Schema({
 
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 
+const gallerySchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  category: { type: String, required: true },
+  image: { type: String, required: true },
+  sizeClass: { type: String, default: 'standard' },
+  desc: { type: String, required: true },
+  date: { type: Date, default: Date.now }
+});
+
+const GalleryItem = mongoose.model('GalleryItem', gallerySchema);
+
 
 // Read/Write helpers for Local JSON DB
 const readLocalDb = () => {
   try {
     const db = JSON.parse(fs.readFileSync(LOCAL_DB_PATH, 'utf-8'));
     if (!db.menu) db.menu = [];
+    if (!db.gallery) db.gallery = [];
     return db;
   } catch (e) {
-    return { users: [], messages: [], subscriptions: [], orders: [], menu: [] };
+    return { users: [], messages: [], subscriptions: [], orders: [], menu: [], gallery: [] };
   }
 };
 
@@ -170,6 +182,21 @@ async function seedDatabase() {
       await MenuItem.insertMany(mockMenu);
       console.log('Mock menu items seeded in MongoDB.');
     }
+
+    // Seed Gallery Items if empty
+    const galleryCount = await GalleryItem.countDocuments();
+    if (galleryCount === 0) {
+      const mockGallery = [
+        { title: 'The Emperor Burger', category: 'Dishes', image: 'emperor_burger', sizeClass: 'tall', desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.' },
+        { title: 'Obsidian Masala Chai', category: 'Drinks', image: 'obsidian_chai', sizeClass: 'standard', desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.' },
+        { title: 'The Obsidian Sanctuary', category: 'Ambiance', image: 'mr_chai_ambiance', sizeClass: 'wide', desc: 'Our flagship dining room featuring deep obsidian tones and warm golden pendant lights.' },
+        { title: 'Gold-Leaf Saffron Cheesecake', category: 'Dishes', image: 'saffron_cheesecake', sizeClass: 'standard', desc: 'Creamy cardamom and saffron cheesecake topped with genuine 24k gold leaf.' },
+        { title: 'Gunpowder Fries', category: 'Dishes', image: 'gunpowder_fries', sizeClass: 'standard', desc: 'Triple-cooked fries tossed in spicy gunpowder podi blend and bird’s eye chili.' },
+        { title: 'Artisanal Cardamom Chai', category: 'Drinks', image: 'hero_chai', sizeClass: 'wide', desc: 'A premium pour of freshly boiled milk tea, cardamom pods, and raw cane sugar.' }
+      ];
+      await GalleryItem.insertMany(mockGallery);
+      console.log('Mock gallery items seeded in MongoDB.');
+    }
   } catch (err) {
     console.error('Seeding MongoDB database failed:', err);
   }
@@ -229,6 +256,18 @@ async function seedLocalDatabase() {
         { name: 'Pistachio Kulfi Dome', category: 'Delights', description: 'Classic dense Indian ice cream slow-churned with pistachios, served as a gold-dusted dome.', price: 10.50, badge: 'Signature', image: 'kulfi_dome', spiceLevel: 0, available: true }
       ].map((item, idx) => ({ ...item, id: `m${idx + 1}` }));
       console.log('Mock menu items seeded in Local File DB.');
+    }
+
+    if (!db.gallery || db.gallery.length === 0) {
+      db.gallery = [
+        { title: 'The Emperor Burger', category: 'Dishes', image: 'emperor_burger', sizeClass: 'tall', desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.' },
+        { title: 'Obsidian Masala Chai', category: 'Drinks', image: 'obsidian_chai', sizeClass: 'standard', desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.' },
+        { title: 'The Obsidian Sanctuary', category: 'Ambiance', image: 'mr_chai_ambiance', sizeClass: 'wide', desc: 'Our flagship dining room featuring deep obsidian tones and warm golden pendant lights.' },
+        { title: 'Gold-Leaf Saffron Cheesecake', category: 'Dishes', image: 'saffron_cheesecake', sizeClass: 'standard', desc: 'Creamy cardamom and saffron cheesecake topped with genuine 24k gold leaf.' },
+        { title: 'Gunpowder Fries', category: 'Dishes', image: 'gunpowder_fries', sizeClass: 'standard', desc: 'Triple-cooked fries tossed in spicy gunpowder podi blend and bird’s eye chili.' },
+        { title: 'Artisanal Cardamom Chai', category: 'Drinks', image: 'hero_chai', sizeClass: 'wide', desc: 'A premium pour of freshly boiled milk tea, cardamom pods, and raw cane sugar.' }
+      ].map((item, idx) => ({ ...item, id: `g${idx + 1}` }));
+      console.log('Mock gallery items seeded in Local File DB.');
     }
 
     writeLocalDb(db);
@@ -614,6 +653,130 @@ app.delete('/api/admin/menu/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error.' });
   }
 });
+
+// ======================== GALLERY CRUD ENDPOINTS ========================
+
+// 13. Retrieve Gallery Items (Public)
+app.get('/api/gallery', async (req, res) => {
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      res.json(db.gallery || []);
+    } else {
+      const gallery = await GalleryItem.find().sort({ date: 1 });
+      res.json(gallery);
+    }
+  } catch (err) {
+    console.error('Retrieve gallery error:', err);
+    res.status(500).json({ error: 'Server error. Failed to retrieve gallery.' });
+  }
+});
+
+// 14. Add a Gallery Item (Admin Protected)
+app.post('/api/admin/gallery', authenticateToken, async (req, res) => {
+  const { title, category, image, sizeClass, desc } = req.body;
+  if (!title || !category || !image || !desc) {
+    return res.status(400).json({ error: 'Title, category, image, and description are required.' });
+  }
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const newItem = {
+        id: Date.now().toString(),
+        title,
+        category,
+        image,
+        sizeClass: sizeClass || 'standard',
+        desc,
+        date: new Date().toISOString()
+      };
+      db.gallery.push(newItem);
+      writeLocalDb(db);
+      res.status(201).json(newItem);
+    } else {
+      const item = await GalleryItem.create({
+        title,
+        category,
+        image,
+        sizeClass: sizeClass || 'standard',
+        desc
+      });
+      res.status(201).json(item);
+    }
+  } catch (err) {
+    console.error('Create gallery item error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// 15. Update a Gallery Item (Admin Protected)
+app.put('/api/admin/gallery/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { title, category, image, sizeClass, desc } = req.body;
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const idx = db.gallery.findIndex(item => item.id === id);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Gallery item not found.' });
+      }
+      
+      db.gallery[idx] = {
+        ...db.gallery[idx],
+        title: title !== undefined ? title : db.gallery[idx].title,
+        category: category !== undefined ? category : db.gallery[idx].category,
+        image: image !== undefined ? image : db.gallery[idx].image,
+        sizeClass: sizeClass !== undefined ? sizeClass : db.gallery[idx].sizeClass,
+        desc: desc !== undefined ? desc : db.gallery[idx].desc
+      };
+      writeLocalDb(db);
+      res.json(db.gallery[idx]);
+    } else {
+      const updated = await GalleryItem.findByIdAndUpdate(
+        id,
+        { title, category, image, sizeClass, desc },
+        { new: true }
+      );
+      if (!updated) {
+        return res.status(404).json({ error: 'Gallery item not found.' });
+      }
+      res.json(updated);
+    }
+  } catch (err) {
+    console.error('Update gallery item error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// 16. Delete a Gallery Item (Admin Protected)
+app.delete('/api/admin/gallery/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    if (useLocalDb) {
+      const db = readLocalDb();
+      const idx = db.gallery.findIndex(item => item.id === id);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Gallery item not found.' });
+      }
+      db.gallery.splice(idx, 1);
+      writeLocalDb(db);
+      res.json({ success: true, message: 'Gallery item deleted successfully.' });
+    } else {
+      const deleted = await GalleryItem.findByIdAndDelete(id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Gallery item not found.' });
+      }
+      res.json({ success: true, message: 'Gallery item deleted successfully.' });
+    }
+  } catch (err) {
+    console.error('Delete gallery item error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
 
 // Start Server
 if (!process.env.VERCEL) {

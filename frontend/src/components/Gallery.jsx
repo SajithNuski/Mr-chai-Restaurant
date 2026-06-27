@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 
@@ -9,69 +9,100 @@ import heroChai from '../assets/hero_chai.png';
 import mrChaiAmbiance from '../assets/mr_chai_ambiance.png';
 import saffronCheesecake from '../assets/saffron_cheesecake.png';
 
-const galleryItems = [
+const localImages = {
+  emperor_burger: emperorBurger,
+  obsidian_chai: obsidianChai,
+  gunpowder_fries: gunpowderFries,
+  hero_chai: heroChai,
+  mr_chai_ambiance: mrChaiAmbiance,
+  saffron_cheesecake: saffronCheesecake
+};
+
+const getImageUrl = (imageKey) => {
+  if (localImages[imageKey]) return localImages[imageKey];
+  return imageKey; // fallback to base64 string or HTTP URL
+};
+
+const defaultGalleryItems = [
   {
-    id: 1,
+    id: 'g1',
     title: 'The Emperor Burger',
     category: 'Dishes',
-    image: emperorBurger,
+    image: 'emperor_burger',
     sizeClass: 'tall',
     desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.'
   },
   {
-    id: 2,
+    id: 'g2',
     title: 'Obsidian Masala Chai',
     category: 'Drinks',
-    image: obsidianChai,
+    image: 'obsidian_chai',
     sizeClass: 'standard',
     desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.'
   },
   {
-    id: 3,
+    id: 'g3',
     title: 'The Obsidian Sanctuary',
     category: 'Ambiance',
-    image: mrChaiAmbiance,
+    image: 'mr_chai_ambiance',
     sizeClass: 'wide',
     desc: 'Our flagship dining room featuring deep obsidian tones and warm golden pendant lights.'
   },
   {
-    id: 4,
+    id: 'g4',
     title: 'Gold-Leaf Saffron Cheesecake',
     category: 'Dishes',
-    image: saffronCheesecake,
+    image: 'saffron_cheesecake',
     sizeClass: 'standard',
     desc: 'Creamy cardamom and saffron cheesecake topped with genuine 24k gold leaf.'
   },
   {
-    id: 5,
+    id: 'g5',
     title: 'Gunpowder Fries',
     category: 'Dishes',
-    image: gunpowderFries,
+    image: 'gunpowder_fries',
     sizeClass: 'standard',
     desc: 'Triple-cooked fries tossed in spicy gunpowder podi blend and bird’s eye chili.'
   },
   {
-    id: 6,
+    id: 'g6',
     title: 'Artisanal Cardamom Chai',
     category: 'Drinks',
-    image: heroChai,
+    image: 'hero_chai',
     sizeClass: 'wide',
     desc: 'A premium pour of freshly boiled milk tea, cardamom pods, and raw cane sugar.'
   }
 ];
 
 export default function Gallery() {
+  const [galleryItems, setGalleryItems] = useState(defaultGalleryItems);
   const [activeCategory, setActiveCategory] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const categories = ['All', 'Dishes', 'Drinks', 'Ambiance'];
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await fetch('/api/gallery');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setGalleryItems(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch gallery items, falling back to local defaults:', err);
+      }
+    };
+    fetchGallery();
+  }, []);
 
   const filteredItems = activeCategory === 'All'
     ? galleryItems
     : galleryItems.filter(item => item.category === activeCategory);
 
   const openLightbox = (index) => {
-    // Find index of the item within the filtered list
     setLightboxIndex(index);
   };
 
@@ -138,12 +169,12 @@ export default function Gallery() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
-                key={item.id}
+                key={item._id || item.id}
                 className={`gallery-card ${item.sizeClass || 'standard'}`}
                 onClick={() => openLightbox(index)}
               >
                 <div className="gallery-card-image-wrapper">
-                  <img src={item.image} alt={item.title} className="gallery-card-img" />
+                  <img src={getImageUrl(item.image)} alt={item.title} className="gallery-card-img" />
                   <div className="gallery-card-overlay">
                     <span className="gallery-card-category">{item.category}</span>
                     <h3 className="gallery-card-title">{item.title}</h3>
@@ -186,7 +217,7 @@ export default function Gallery() {
               >
                 <div className="lightbox-image-container">
                   <img 
-                    src={filteredItems[lightboxIndex].image} 
+                    src={getImageUrl(filteredItems[lightboxIndex].image)} 
                     alt={filteredItems[lightboxIndex].title} 
                     className="lightbox-img" 
                   />
