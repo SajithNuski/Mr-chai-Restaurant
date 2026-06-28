@@ -4,7 +4,7 @@ import {
   TrendingUp, ShoppingCart, MessageSquare, Heart, Mail, 
   Menu as MenuIcon, Settings, LogOut, RefreshCw, Bell, Users,
   Plus, Edit, Trash2, X, Flame, Clock, Coffee, Shield, Activity,
-  Sliders, Calendar, CheckCircle2, AlertCircle, Image
+  Sliders, Calendar, CheckCircle2, AlertCircle, Image, Sparkles
 } from 'lucide-react';
 
 import logoImg from '../assets/logo.png';
@@ -25,6 +25,26 @@ const localImages = {
   mr_chai_ambiance: mrChaiAmbiance,
   saffron_cheesecake: saffronCheesecake
 };
+
+const defaultMenuItems = [
+  { id: 'm1', name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
+  { id: 'm2', name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioi, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
+  { id: 'm3', name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true },
+  { id: 'm4', name: 'Kashmiri Rose Kahwa', category: 'Drinks', description: 'Traditional green tea prepared with saffron, almonds, cinnamon, cardamom, and fresh red rose petals.', price: 8.00, badge: 'Premium', image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=400&q=80', spiceLevel: 0, available: true },
+  { id: 'm5', name: 'Truffle Vada Pav', category: 'Street Eats', description: 'Traditional potato dumpling slider inside a soft pav, infused with black truffle oil and dry garlic chutney.', price: 14.00, badge: 'Premium', image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=400&q=80', spiceLevel: 1, available: true },
+  { id: 'm6', name: 'Gunpowder Fries', category: 'Street Eats', description: 'Crisp hand-cut potato wedges tossed in a fiery South Indian gunpowder spice mix and curry leaf dust.', price: 9.00, badge: 'Fiery', image: 'gunpowder_fries', spiceLevel: 3, available: true },
+  { id: 'm7', name: 'Mango Cardamom Lassi', category: 'Drinks', description: 'Velvety yogurt beverage blended with sweet Alphonso mango pulp, green cardamom, and pistachio slivers.', price: 8.50, badge: 'Bestseller', image: 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=400&q=80', spiceLevel: 0, available: true },
+  { id: 'm8', name: 'Pistachio Kulfi Dome', category: 'Delights', description: 'Classic dense Indian ice cream slow-churned with pistachios, served as a gold-dusted dome.', price: 10.50, badge: 'Signature', image: 'https://images.unsplash.com/photo-1505394033343-e3852a656e43?auto=format&fit=crop&w=400&q=80', spiceLevel: 0, available: true }
+];
+
+const defaultGalleryItems = [
+  { id: 'g1', title: 'The Emperor Burger', category: 'Dishes', image: 'emperor_burger', sizeClass: 'tall', desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.' },
+  { id: 'g2', title: 'Obsidian Masala Chai', category: 'Drinks', image: 'obsidian_chai', sizeClass: 'standard', desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.' },
+  { id: 'g3', title: 'The Obsidian Sanctuary', category: 'Ambiance', image: 'mr_chai_ambiance', sizeClass: 'wide', desc: 'Our flagship dining room featuring deep obsidian tones and warm golden pendant lights.' },
+  { id: 'g4', title: 'Gold-Leaf Saffron Cheesecake', category: 'Dishes', image: 'saffron_cheesecake', sizeClass: 'standard', desc: 'Creamy cardamom and saffron cheesecake topped with genuine 24k gold leaf.' },
+  { id: 'g5', title: 'Gunpowder Fries', category: 'Dishes', image: 'gunpowder_fries', sizeClass: 'standard', desc: 'Triple-cooked fries tossed in spicy gunpowder podi blend and bird’s eye chili.' },
+  { id: 'g6', title: 'Artisanal Cardamom Chai', category: 'Drinks', image: 'hero_chai', sizeClass: 'wide', desc: 'A premium pour of freshly boiled milk tea, cardamom pods, and raw cane sugar.' }
+];
 
 const getImageUrl = (imageKey) => {
   if (localImages[imageKey]) return localImages[imageKey];
@@ -127,14 +147,14 @@ export default function AdminDashboard({ onLogout }) {
       const menuRes = await fetch('/api/menu');
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        setMenuItems(menuData);
+        setMenuItems(menuData.length > 0 ? menuData : defaultMenuItems);
       }
 
       // Fetch gallery items
       const galleryRes = await fetch('/api/gallery');
       if (galleryRes.ok) {
         const galleryData = await galleryRes.json();
-        setGalleryItems(galleryData);
+        setGalleryItems(galleryData.length > 0 ? galleryData : defaultGalleryItems);
       }
     } catch (err) {
       console.error('Error fetching admin data, utilizing fallbacks:', err);
@@ -147,17 +167,10 @@ export default function AdminDashboard({ onLogout }) {
         { id: '1', email: 'vip-guest@luxury.com', date: new Date(Date.now() - 86400000).toISOString() },
         { id: '2', email: 'foodie@bazaar.org', date: new Date(Date.now() - 86400000 * 2).toISOString() }
       ]);
-      setMenuItems([
-        { id: 'm1', name: 'Obsidian Masala Chai', category: 'Drinks', description: 'Slow-steeped loose leaf tea from Assam, hand-ground secret spice blend, and creamy whole milk.', price: 7.00, badge: 'Legendary', image: 'obsidian_chai', spiceLevel: 1, available: true },
-        { id: 'm2', name: 'The Emperor Burger', category: 'Street Eats', description: 'Double wagyu beef, aged cheddar, truffle aioi, and caramelized heirloom spices on a toasted brioche.', price: 18.50, badge: 'Signature', image: 'emperor_burger', spiceLevel: 2, available: true },
-        { id: 'm3', name: 'Gold-Leaf Saffron Cheesecake', category: 'Delights', description: 'Rich cheesecake infused with premium Kashmiri saffron, cardamom pod crust, and finished with 24k gold leaf.', price: 12.50, badge: 'Chef Special', image: 'saffron_cheesecake', spiceLevel: 0, available: true }
-      ]);
-      setGalleryItems([
-        { id: 'g1', title: 'The Emperor Burger', category: 'Dishes', image: 'emperor_burger', sizeClass: 'tall', desc: 'Double wagyu beef, caramelized heirloom spices, toasted brioche.' },
-        { id: 'g2', title: 'Obsidian Masala Chai', category: 'Drinks', image: 'obsidian_chai', sizeClass: 'standard', desc: 'Slow-steeped Assam black tea infused with our signature hand-ground spices.' }
-      ]);
+      setMenuItems(defaultMenuItems);
+      setGalleryItems(defaultGalleryItems);
       setStats({
-        menuItems: 3,
+        menuItems: defaultMenuItems.length,
         totalReviews: 856,
         totalMessages: 26,
         weeklyVolume: [120, 180, 150, 220, 190, 240, 210]
@@ -221,8 +234,19 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to save menu item');
+        let errorMessage = 'Failed to save menu item';
+        try {
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            errorMessage = `${res.status} ${res.statusText}`;
+          }
+        } catch (parseErr) {
+          errorMessage = `${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       toast.success(isEditing ? 'Menu recipe updated.' : 'New menu recipe created.');
@@ -295,8 +319,19 @@ export default function AdminDashboard({ onLogout }) {
       }
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to save gallery item');
+        let errorMessage = 'Failed to save gallery item';
+        try {
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            errorMessage = `${res.status} ${res.statusText}`;
+          }
+        } catch (parseErr) {
+          errorMessage = `${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       toast.success(isEditing ? 'Gallery canvas item updated.' : 'New gallery canvas item added.');
@@ -1143,6 +1178,38 @@ export default function AdminDashboard({ onLogout }) {
                   </button>
                 </div>
                 <form onSubmit={handleAddOrEditGallery} className="db-modal-form">
+                  {menuItems.length > 0 && (
+                    <div className="form-group" style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '16px' }}>
+                      <label className="alchemist-form-label" style={{ color: 'var(--gold-heritage)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Sparkles size={14} /> Import Details from Recipe Catalog
+                      </label>
+                      <select 
+                        className="alchemist-input alchemist-select"
+                        value=""
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          if (!selectedId) return;
+                          const selectedItem = menuItems.find(item => (item._id || item.id) === selectedId);
+                          if (selectedItem) {
+                            setGalleryForm(prev => ({
+                              ...prev,
+                              title: selectedItem.name,
+                              category: selectedItem.category === 'Drinks' ? 'Drinks' : 'Dishes',
+                              desc: selectedItem.description,
+                              image: selectedItem.image || ''
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">-- Choose an existing dish/drink to auto-fill fields --</option>
+                        {menuItems.map(item => (
+                          <option key={item._id || item.id} value={item._id || item.id}>
+                            {item.name} ({item.category})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="form-group-row">
                     <div className="form-group">
                       <label className="alchemist-form-label">Canvas Title *</label>
