@@ -29,7 +29,7 @@ export default function Navbar({ isAdminView, onToggleAdmin, activeSection }) {
           <>
             <ul className="nav-links">
               <li>
-                <a href="#home" className={activeSection === 'home' ? 'active' : ''}>Oome</a>
+                <a href="#home" className={activeSection === 'home' ? 'active' : ''}>Home</a>
               </li>
               <li>
                 <a href="#menu" className={activeSection === 'menu' ? 'active' : ''}>Menu</a>
