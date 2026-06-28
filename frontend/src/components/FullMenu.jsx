@@ -198,7 +198,7 @@ export default function FullMenu({ onBack }) {
                       {item.description}
                     </p>
                     <div className="menu-item-card-footer">
-                      <span className="menu-item-card-price">${parseFloat(item.price).toFixed(2)}</span>
+                      <span className="menu-item-card-price">Rs. {parseFloat(item.price).toFixed(2)}</span>
                       {renderSpiceLevel(item.spiceLevel)}
                     </div>
                   </div>

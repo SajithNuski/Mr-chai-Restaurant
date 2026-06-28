@@ -4,7 +4,7 @@ import {
   TrendingUp, ShoppingCart, MessageSquare, Heart, Mail, 
   Menu as MenuIcon, Settings, LogOut, RefreshCw, Bell, Users,
   Plus, Edit, Trash2, X, Flame, Clock, Coffee, Shield, Activity,
-  Sliders, Calendar, CheckCircle2, AlertCircle, Image, Sparkles
+  Sliders, Calendar, CheckCircle2, AlertCircle, Image, Sparkles, Search
 } from 'lucide-react';
 
 import logoImg from '../assets/logo.png';
@@ -89,6 +89,21 @@ export default function AdminDashboard({ onLogout }) {
     sizeClass: 'standard',
     desc: ''
   });
+
+  // List Search, Filter & Pagination states
+  const [menuSearch, setMenuSearch] = useState('');
+  const [menuCatFilter, setMenuCatFilter] = useState('All');
+  const [menuPage, setMenuPage] = useState(1);
+
+  const [gallerySearch, setGallerySearch] = useState('');
+  const [galleryCatFilter, setGalleryCatFilter] = useState('All');
+  const [galleryPage, setGalleryPage] = useState(1);
+
+  const [messagesSearch, setMessagesSearch] = useState('');
+  const [messagesPage, setMessagesPage] = useState(1);
+
+  const [subscribersSearch, setSubscribersSearch] = useState('');
+  const [subscribersPage, setSubscribersPage] = useState(1);
 
   const token = localStorage.getItem('adminToken');
   const username = localStorage.getItem('adminUser') || 'Admin User';
@@ -408,6 +423,17 @@ export default function AdminDashboard({ onLogout }) {
     }
   };
 
+  const handleMenuImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMenuForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const openAddModal = () => {
     setEditingItem(null);
     setMenuForm({
@@ -546,6 +572,53 @@ export default function AdminDashboard({ onLogout }) {
     );
   };
 
+  // Filtered & Paginated Menu Items
+  const filteredMenuItems = menuItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(menuSearch.toLowerCase()) ||
+                          (item.description && item.description.toLowerCase().includes(menuSearch.toLowerCase()));
+    const matchesCat = menuCatFilter === 'All' || item.category === menuCatFilter;
+    return matchesSearch && matchesCat;
+  });
+  const itemsPerPage = 5;
+  const totalMenuPages = Math.ceil(filteredMenuItems.length / itemsPerPage) || 1;
+  const activeMenuPage = Math.min(menuPage, totalMenuPages);
+  const startIndexMenu = (activeMenuPage - 1) * itemsPerPage;
+  const paginatedMenuItems = filteredMenuItems.slice(startIndexMenu, startIndexMenu + itemsPerPage);
+
+  // Filtered & Paginated Messages
+  const filteredMessages = messages.filter(msg => {
+    return msg.name.toLowerCase().includes(messagesSearch.toLowerCase()) ||
+           msg.email.toLowerCase().includes(messagesSearch.toLowerCase()) ||
+           (msg.subject && msg.subject.toLowerCase().includes(messagesSearch.toLowerCase())) ||
+           (msg.message && msg.message.toLowerCase().includes(messagesSearch.toLowerCase()));
+  });
+  const totalMessagePages = Math.ceil(filteredMessages.length / itemsPerPage) || 1;
+  const activeMessagePage = Math.min(messagesPage, totalMessagePages);
+  const startIndexMsg = (activeMessagePage - 1) * itemsPerPage;
+  const paginatedMessages = filteredMessages.slice(startIndexMsg, startIndexMsg + itemsPerPage);
+
+  // Filtered & Paginated Subscribers
+  const subscribersPerPage = 10;
+  const filteredSubscribers = subscribers.filter(sub => {
+    return sub.email.toLowerCase().includes(subscribersSearch.toLowerCase());
+  });
+  const totalSubscriberPages = Math.ceil(filteredSubscribers.length / subscribersPerPage) || 1;
+  const activeSubscriberPage = Math.min(subscribersPage, totalSubscriberPages);
+  const startIndexSub = (activeSubscriberPage - 1) * subscribersPerPage;
+  const paginatedSubscribers = filteredSubscribers.slice(startIndexSub, startIndexSub + subscribersPerPage);
+
+  // Filtered & Paginated Gallery Canvas Items
+  const filteredGalleryItems = galleryItems.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(gallerySearch.toLowerCase()) ||
+                          (item.desc && item.desc.toLowerCase().includes(gallerySearch.toLowerCase()));
+    const matchesCat = galleryCatFilter === 'All' || item.category === galleryCatFilter;
+    return matchesSearch && matchesCat;
+  });
+  const totalGalleryPages = Math.ceil(filteredGalleryItems.length / itemsPerPage) || 1;
+  const activeGalleryPage = Math.min(galleryPage, totalGalleryPages);
+  const startIndexGallery = (activeGalleryPage - 1) * itemsPerPage;
+  const paginatedGalleryItems = filteredGalleryItems.slice(startIndexGallery, startIndexGallery + itemsPerPage);
+
   return (
     <div className="dashboard-layout">
       
@@ -627,71 +700,95 @@ export default function AdminDashboard({ onLogout }) {
         {/* Header */}
         <header className="db-header">
           <div className="db-header-title">
-            <h1 className="ledger-title">Executive Ledger</h1>
-            <p className="ledger-subtitle">Chai and street eats culinary administration console.</p>
+            <h1 className="ledger-title">
+              {activeTab === 'dashboard' && "Executive Ledger"}
+              {activeTab === 'menu' && "Recipe Catalog"}
+              {activeTab === 'messages' && "Guest Heartbeats"}
+              {activeTab === 'subscribers' && "Subscribers Log"}
+              {activeTab === 'gallery' && "Gallery Canvas"}
+            </h1>
+            <p className="ledger-subtitle">
+              {activeTab === 'dashboard' && "Chai and street eats culinary administration console."}
+              {activeTab === 'menu' && "Curate the luxury selection of Mr. Chai flavors."}
+              {activeTab === 'messages' && "Direct feedback and inquiries logged from the web terminal."}
+              {activeTab === 'subscribers' && "Newsletter and flavor dispatch subscriptions."}
+              {activeTab === 'gallery' && "Manage the visual art portfolio of Mr. Chai restaurant and ambiance."}
+            </p>
           </div>
           <div className="db-header-actions">
-            <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '10px 20px', gap: '8px', fontSize: '12px' }}>
-              <RefreshCw size={14} className={loading ? 'spin-icon' : ''} /> Synchronize Metrics
-            </button>
+            {activeTab === 'dashboard' && (
+              <button onClick={handleManualRefresh} className={`btn btn-secondary ${loading ? 'anim-spin' : ''}`} style={{ padding: '10px 20px', gap: '8px', fontSize: '12px' }}>
+                <RefreshCw size={14} className={loading ? 'spin-icon' : ''} /> Synchronize Metrics
+              </button>
+            )}
+            {activeTab === 'menu' && (
+              <button className="btn btn-primary" onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
+                <Plus size={14} /> Add New Recipe
+              </button>
+            )}
+            {activeTab === 'gallery' && (
+              <button className="btn btn-primary" onClick={openAddGalleryModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
+                <Plus size={14} /> Add New Canvas
+              </button>
+            )}
           </div>
         </header>
-
-        {/* Stats Row */}
-        <section className="db-stats-grid">
-          <div className="db-stat-card">
-            <div className="db-stat-info">
-              <p className="stat-label">Subscriber Registry</p>
-              <h3 className="stat-value">{subscribers.length}</h3>
-            </div>
-            <div className="db-stat-icon">
-              <Users size={20} />
-            </div>
-          </div>
-
-          <div className="db-stat-card">
-            <div className="db-stat-info">
-              <p className="stat-label">Recipe Catalog</p>
-              <h3 className="stat-value">{stats.menuItems} <span className="stat-subtext">Items</span></h3>
-            </div>
-            <div className="db-stat-icon">
-              <Coffee size={20} />
-            </div>
-          </div>
-
-          <div className="db-stat-card">
-            <div className="db-stat-info">
-              <p className="stat-label">Guest Appreciations</p>
-              <h3 className="stat-value">{stats.totalReviews}</h3>
-            </div>
-            <div className="db-stat-icon">
-              <Heart size={20} />
-            </div>
-          </div>
-
-          <div className="db-stat-card">
-            <div className="db-stat-info">
-              <p className="stat-label">Inquiry Logs</p>
-              <h3 className="stat-value">{stats.totalMessages}</h3>
-            </div>
-            <div className="db-stat-icon">
-              <MessageSquare size={20} />
-            </div>
-          </div>
-        </section>
 
         {/* Tab Switchers */}
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
             <motion.div 
               key="dashboard-tab"
-              className="db-content-grid"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="db-panel">
+              {/* Stats Row */}
+              <section className="db-stats-grid">
+                <div className="db-stat-card">
+                  <div className="db-stat-info">
+                    <p className="stat-label">Subscriber Registry</p>
+                    <h3 className="stat-value">{subscribers.length}</h3>
+                  </div>
+                  <div className="db-stat-icon">
+                    <Users size={20} />
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-info">
+                    <p className="stat-label">Recipe Catalog</p>
+                    <h3 className="stat-value">{stats.menuItems} <span className="stat-subtext">Items</span></h3>
+                  </div>
+                  <div className="db-stat-icon">
+                    <Coffee size={20} />
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-info">
+                    <p className="stat-label">Guest Appreciations</p>
+                    <h3 className="stat-value">{stats.totalReviews}</h3>
+                  </div>
+                  <div className="db-stat-icon">
+                    <Heart size={20} />
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-info">
+                    <p className="stat-label">Inquiry Logs</p>
+                    <h3 className="stat-value">{stats.totalMessages}</h3>
+                  </div>
+                  <div className="db-stat-icon">
+                    <MessageSquare size={20} />
+                  </div>
+                </div>
+              </section>
+
+              <div className="db-content-grid">
+                <div className="db-panel">
                 <div className="db-panel-header">
                   <div>
                     <h3>Guest Engagement Telemetry</h3>
@@ -752,6 +849,7 @@ export default function AdminDashboard({ onLogout }) {
                   )}
                 </div>
               </div>
+              </div>
             </motion.div>
           )}
 
@@ -764,19 +862,35 @@ export default function AdminDashboard({ onLogout }) {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="db-panel-header flex-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3>Recipe Catalog</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Curate the luxury selection of Mr. Chai flavors</p>
+              <div className="db-filter-bar">
+                <div className="db-search-group">
+                  <Search size={14} className="db-search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search recipes by name or description..." 
+                    value={menuSearch}
+                    onChange={(e) => { setMenuSearch(e.target.value); setMenuPage(1); }}
+                    className="db-search-input"
+                  />
                 </div>
-                <button className="btn btn-primary" onClick={openAddModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
-                  <Plus size={14} /> Add New Recipe
-                </button>
+                <div className="db-filter-group">
+                  <select 
+                    value={menuCatFilter}
+                    onChange={(e) => { setMenuCatFilter(e.target.value); setMenuPage(1); }}
+                    className="db-filter-select"
+                  >
+                    <option value="All">All Categories</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Street Eats">Street Eats</option>
+                    <option value="Delights">Delights</option>
+                  </select>
+                </div>
               </div>
               <div className="db-table-wrapper">
                 <table className="db-table">
                   <thead>
                     <tr>
+                      <th>Preview</th>
                       <th>Menu Item</th>
                       <th>Category</th>
                       <th>Description</th>
@@ -787,13 +901,25 @@ export default function AdminDashboard({ onLogout }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {menuItems.length === 0 ? (
+                    {paginatedMenuItems.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="table-empty">Catalog is currently empty. Add a recipe to begin.</td>
+                        <td colSpan="8" className="table-empty">No recipes match the search/filter criteria.</td>
                       </tr>
                     ) : (
-                      menuItems.map((item, idx) => (
+                      paginatedMenuItems.map((item, idx) => (
                         <tr key={item._id || item.id || idx}>
+                          <td style={{ width: '80px' }}>
+                            <div className="table-preview-img-wrapper" style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--color-clay-ebony)' }}>
+                              <img 
+                                src={getImageUrl(item.image)} 
+                                alt={item.name} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => {
+                                  e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=120&auto=format&fit=crop&q=60';
+                                }}
+                              />
+                            </div>
+                          </td>
                           <td>
                             <div className="table-item-title">{item.name}</div>
                             {item.badge && <span className="db-badge-tag">{item.badge}</span>}
@@ -802,7 +928,7 @@ export default function AdminDashboard({ onLogout }) {
                           <td className="description-cell">
                             {item.description}
                           </td>
-                          <td className="gold-accent font-numeric" style={{ fontWeight: 700 }}>${parseFloat(item.price).toFixed(2)}</td>
+                          <td className="gold-accent font-numeric" style={{ fontWeight: 700 }}>Rs. {parseFloat(item.price).toFixed(2)}</td>
                           <td>
                             {item.spiceLevel > 0 ? (
                               <span className="flex spice-flames" style={{ display: 'flex', color: 'var(--color-saffron)', gap: '2px' }}>
@@ -844,6 +970,29 @@ export default function AdminDashboard({ onLogout }) {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              <div className="db-pagination">
+                <div className="pagination-info">
+                  Showing {filteredMenuItems.length === 0 ? 0 : startIndexMenu + 1} to {Math.min(startIndexMenu + itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} recipes
+                </div>
+                <div className="pagination-btn-group">
+                  <button 
+                    onClick={() => setMenuPage(prev => Math.max(prev - 1, 1))} 
+                    disabled={activeMenuPage === 1}
+                    className="pagination-btn"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setMenuPage(prev => Math.min(prev + 1, totalMenuPages))} 
+                    disabled={activeMenuPage === totalMenuPages}
+                    className="pagination-btn"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -856,10 +1005,16 @@ export default function AdminDashboard({ onLogout }) {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="db-panel-header">
-                <div>
-                  <h3>Guest Heartbeats</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Direct feedback and inquiries logged from the web terminal</p>
+              <div className="db-filter-bar">
+                <div className="db-search-group">
+                  <Search size={14} className="db-search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search dispatches by name, email, subject, or message..." 
+                    value={messagesSearch}
+                    onChange={(e) => { setMessagesSearch(e.target.value); setMessagesPage(1); }}
+                    className="db-search-input"
+                  />
                 </div>
               </div>
               <div className="db-table-wrapper">
@@ -873,12 +1028,12 @@ export default function AdminDashboard({ onLogout }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {messages.length === 0 ? (
+                    {paginatedMessages.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="table-empty">No inquiry logs stored.</td>
+                        <td colSpan="4" className="table-empty">No inquiry logs match the search criteria.</td>
                       </tr>
                     ) : (
-                      messages.map((msg, idx) => (
+                      paginatedMessages.map((msg, idx) => (
                         <tr key={msg.id || msg._id || idx}>
                           <td>
                             <div className="table-item-title">{msg.name}</div>
@@ -893,6 +1048,29 @@ export default function AdminDashboard({ onLogout }) {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              <div className="db-pagination">
+                <div className="pagination-info">
+                  Showing {filteredMessages.length === 0 ? 0 : startIndexMsg + 1} to {Math.min(startIndexMsg + itemsPerPage, filteredMessages.length)} of {filteredMessages.length} dispatches
+                </div>
+                <div className="pagination-btn-group">
+                  <button 
+                    onClick={() => setMessagesPage(prev => Math.max(prev - 1, 1))} 
+                    disabled={activeMessagePage === 1}
+                    className="pagination-btn"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setMessagesPage(prev => Math.min(prev + 1, totalMessagePages))} 
+                    disabled={activeMessagePage === totalMessagePages}
+                    className="pagination-btn"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -905,10 +1083,16 @@ export default function AdminDashboard({ onLogout }) {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="db-panel-header">
-                <div>
-                  <h3>Subscribers Log</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Newsletter and flavor dispatch subscriptions</p>
+              <div className="db-filter-bar">
+                <div className="db-search-group">
+                  <Search size={14} className="db-search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search subscribers by email..." 
+                    value={subscribersSearch}
+                    onChange={(e) => { setSubscribersSearch(e.target.value); setSubscribersPage(1); }}
+                    className="db-search-input"
+                  />
                 </div>
               </div>
               <div className="db-table-wrapper">
@@ -920,12 +1104,12 @@ export default function AdminDashboard({ onLogout }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {subscribers.length === 0 ? (
+                    {paginatedSubscribers.length === 0 ? (
                       <tr>
-                        <td colSpan="2" className="table-empty">No newsletter subscribers logged.</td>
+                        <td colSpan="2" className="table-empty">No newsletter subscribers match the search criteria.</td>
                       </tr>
                     ) : (
-                      subscribers.map((sub, idx) => (
+                      paginatedSubscribers.map((sub, idx) => (
                         <tr key={sub.id || sub._id || idx}>
                           <td style={{ fontWeight: 700 }} className="gold-accent">{sub.email}</td>
                           <td className="font-numeric">{new Date(sub.date).toLocaleString()}</td>
@@ -934,6 +1118,29 @@ export default function AdminDashboard({ onLogout }) {
                     )}
                   </tbody>
                 </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="db-pagination">
+                <div className="pagination-info">
+                  Showing {filteredSubscribers.length === 0 ? 0 : startIndexSub + 1} to {Math.min(startIndexSub + subscribersPerPage, filteredSubscribers.length)} of {filteredSubscribers.length} subscribers
+                </div>
+                <div className="pagination-btn-group">
+                  <button 
+                    onClick={() => setSubscribersPage(prev => Math.max(prev - 1, 1))} 
+                    disabled={activeSubscriberPage === 1}
+                    className="pagination-btn"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setSubscribersPage(prev => Math.min(prev + 1, totalSubscriberPages))} 
+                    disabled={activeSubscriberPage === totalSubscriberPages}
+                    className="pagination-btn"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -947,14 +1154,29 @@ export default function AdminDashboard({ onLogout }) {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="db-panel-header flex-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3>Gallery Canvas</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Manage the visual art portfolio of Mr. Chai restaurant and ambiance</p>
+              <div className="db-filter-bar">
+                <div className="db-search-group">
+                  <Search size={14} className="db-search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search gallery by title or description..." 
+                    value={gallerySearch}
+                    onChange={(e) => { setGallerySearch(e.target.value); setGalleryPage(1); }}
+                    className="db-search-input"
+                  />
                 </div>
-                <button className="btn btn-primary" onClick={openAddGalleryModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', fontSize: '12px' }}>
-                  <Plus size={14} /> Add New Canvas
-                </button>
+                <div className="db-filter-group">
+                  <select 
+                    value={galleryCatFilter}
+                    onChange={(e) => { setGalleryCatFilter(e.target.value); setGalleryPage(1); }}
+                    className="db-filter-select"
+                  >
+                    <option value="All">All Categories</option>
+                    <option value="Dishes">Dishes</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Ambiance">Ambiance</option>
+                  </select>
+                </div>
               </div>
               <div className="db-table-wrapper">
                 <table className="db-table">
@@ -969,12 +1191,12 @@ export default function AdminDashboard({ onLogout }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {galleryItems.length === 0 ? (
+                    {paginatedGalleryItems.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="table-empty">Gallery Canvas is empty. Upload canvas images to display them in the customer gallery.</td>
+                        <td colSpan="6" className="table-empty">No gallery canvas items match the search/filter criteria.</td>
                       </tr>
                     ) : (
-                      galleryItems.map((item, idx) => (
+                      paginatedGalleryItems.map((item, idx) => (
                         <tr key={item._id || item.id || idx}>
                           <td style={{ width: '80px' }}>
                             <div className="table-preview-img-wrapper" style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--color-clay-ebony)' }}>
@@ -1023,6 +1245,29 @@ export default function AdminDashboard({ onLogout }) {
                     )}
                   </tbody>
                 </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="db-pagination">
+                <div className="pagination-info">
+                  Showing {filteredGalleryItems.length === 0 ? 0 : startIndexGallery + 1} to {Math.min(startIndexGallery + itemsPerPage, filteredGalleryItems.length)} of {filteredGalleryItems.length} canvas items
+                </div>
+                <div className="pagination-btn-group">
+                  <button 
+                    onClick={() => setGalleryPage(prev => Math.max(prev - 1, 1))} 
+                    disabled={activeGalleryPage === 1}
+                    className="pagination-btn"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setGalleryPage(prev => Math.min(prev + 1, totalGalleryPages))} 
+                    disabled={activeGalleryPage === totalGalleryPages}
+                    className="pagination-btn"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -1074,7 +1319,7 @@ export default function AdminDashboard({ onLogout }) {
 
                   <div className="form-group-row">
                     <div className="form-group">
-                      <label className="alchemist-form-label">Unit Value ($) *</label>
+                      <label className="alchemist-form-label">Unit Value (Rs.) *</label>
                       <input 
                         type="number" 
                         step="0.01" 
@@ -1098,11 +1343,11 @@ export default function AdminDashboard({ onLogout }) {
 
                   <div className="form-group-row">
                     <div className="form-group">
-                      <label className="alchemist-form-label">Asset Image Key</label>
+                      <label className="alchemist-form-label">Asset Image Key / URL</label>
                       <input 
                         type="text" 
                         placeholder="obsidian_chai, emperor_burger..." 
-                        value={menuForm.image} 
+                        value={menuForm.image.startsWith('data:') ? 'Base64 Encoded Image' : menuForm.image} 
                         onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
                         className="alchemist-input"
                       />
@@ -1120,6 +1365,29 @@ export default function AdminDashboard({ onLogout }) {
                         <option value="3">3 - Intense Heat</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label className="alchemist-form-label">Or Upload Custom Image File</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleMenuImageChange}
+                      className="alchemist-input"
+                      style={{ padding: '8px' }}
+                    />
+                    {menuForm.image && (
+                      <div style={{ marginTop: '10px', width: '100px', height: '100px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                        <img 
+                          src={getImageUrl(menuForm.image)}
+                          alt="Upload Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=120&auto=format&fit=crop&q=60';
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group">

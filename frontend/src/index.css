@@ -2028,15 +2028,215 @@ textarea.form-control {
   letter-spacing: 0.05em;
 }
 
-.chart-point-glow {
-  transform-origin: center;
-  animation: pulse-glow 2.5s infinite ease-in-out;
-}
-
 @keyframes pulse-glow {
   0% { transform: scale(1); opacity: 0.15; }
   50% { transform: scale(1.6); opacity: 0.4; }
   100% { transform: scale(1); opacity: 0.15; }
+}
+
+/* Dashboard Filter Bar and Controls */
+.db-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.db-search-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  max-width: 480px;
+}
+
+.db-search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--color-brass);
+  pointer-events: none;
+}
+
+.db-search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  background-color: rgba(16, 10, 9, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 6px;
+  color: var(--color-cream-malai);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.db-search-input:focus {
+  border-color: var(--color-brass);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+.db-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-filter-select {
+  padding: 10px 16px;
+  background-color: rgba(16, 10, 9, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 6px;
+  color: var(--color-cream-malai);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.db-filter-select:focus {
+  border-color: var(--color-brass);
+}
+
+/* Premium Admin Tables */
+.db-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  background-color: rgba(16, 10, 9, 0.2);
+}
+
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.db-table th {
+  background-color: rgba(16, 10, 9, 0.6);
+  color: var(--color-brass);
+  font-family: var(--font-utility);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.db-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+  color: var(--color-parchment-gray);
+  vertical-align: middle;
+}
+
+.db-table tr:last-child td {
+  border-bottom: none;
+}
+
+.db-table tr:hover td {
+  background-color: rgba(212, 175, 55, 0.02);
+  color: var(--color-cream-malai);
+}
+
+.table-item-title {
+  font-weight: 700;
+  color: var(--color-cream-malai);
+  font-size: 14px;
+}
+
+.category-cell {
+  font-family: var(--font-utility);
+  font-size: 11px;
+  color: var(--color-brass);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.description-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.message-content-cell {
+  max-width: 400px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.gold-accent {
+  color: var(--color-brass);
+}
+
+.font-numeric {
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.table-empty {
+  text-align: center;
+  padding: 40px 20px !important;
+  color: var(--color-parchment-gray);
+  font-style: italic;
+}
+
+/* Pagination Styling */
+.db-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: 12px;
+  color: var(--color-parchment-gray);
+}
+
+.pagination-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background-color: rgba(16, 10, 9, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 4px;
+  color: var(--color-parchment-gray);
+  font-family: var(--font-utility);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--color-brass);
+  color: var(--color-cream-malai);
+  background-color: rgba(212, 175, 55, 0.08);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* The Spiced Hearth Live Order Tickets */
