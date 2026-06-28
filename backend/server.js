@@ -16,6 +16,25 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
+
+// Request URL and Path Normalization Middleware (Handles Vercel router rewrites/stripping)
+app.use((req, res, next) => {
+  const matchedPath = req.headers['x-matched-path'] || req.headers['x-now-route-source'] || req.url;
+  
+  if (matchedPath && matchedPath !== '/api/index.js' && matchedPath !== '/api') {
+    let targetUrl = matchedPath;
+    if (!targetUrl.startsWith('/api')) {
+      targetUrl = '/api' + targetUrl;
+    }
+    req.url = targetUrl;
+  } else {
+    if (!req.url.startsWith('/api')) {
+      req.url = '/api' + req.url;
+    }
+  }
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
