@@ -13,6 +13,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -27,6 +28,46 @@ const LOCAL_DB_PATH = process.env.VERCEL
   ? path.join('/tmp', 'local_db.json')
   : path.join(__dirname, 'local_db.json');
 let useLocalDb = true; // Start in local DB fallback mode for resilience
+let dbConnectionPromise = null;
+
+// Database Connection Middleware
+const ensureDbConnection = async (req, res, next) => {
+  if (mongoose.connection.readyState === 1) {
+    useLocalDb = false;
+    return next();
+  }
+
+  if (mongoose.connection.readyState === 2) {
+    if (dbConnectionPromise) {
+      try {
+        await dbConnectionPromise;
+        useLocalDb = false;
+      } catch (err) {
+        useLocalDb = true;
+      }
+      return next();
+    }
+  }
+
+  console.log('[DB Middleware] Connecting to MongoDB...');
+  dbConnectionPromise = mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000
+  });
+
+  try {
+    await dbConnectionPromise;
+    console.log('[DB Middleware] Successfully connected to MongoDB.');
+    useLocalDb = false;
+    seedDatabase();
+  } catch (err) {
+    console.error('[DB Middleware] MongoDB connection failed, utilizing local file storage fallback:', err.message);
+    useLocalDb = true;
+  } finally {
+    next();
+  }
+};
+
+app.use(ensureDbConnection);
 
 // Initialize local database file if not exists
 if (!fs.existsSync(LOCAL_DB_PATH)) {
@@ -44,16 +85,6 @@ if (!fs.existsSync(LOCAL_DB_PATH)) {
   }
 }
 
-// Database Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('Successfully connected to MongoDB. Switching to MongoDB storage.');
-    useLocalDb = false;
-    seedDatabase();
-  })
-  .catch(err => {
-    console.error('MongoDB connection error, keeping local file storage fallback:', err.message);
-  });
 
 // Schema definitions for MongoDB
 const messageSchema = new mongoose.Schema({
@@ -779,6 +810,20 @@ app.delete('/api/admin/gallery/:id', authenticateToken, async (req, res) => {
 });
 
 
+
+// Database Connection Startup
+dbConnectionPromise = mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000
+})
+  .then(() => {
+    console.log('Successfully connected to MongoDB. Switching to MongoDB storage.');
+    useLocalDb = false;
+    seedDatabase();
+  })
+  .catch(err => {
+    console.error('MongoDB connection error, keeping local file storage fallback:', err.message);
+  });
+
 // Start Server
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
@@ -790,3 +835,4 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
+

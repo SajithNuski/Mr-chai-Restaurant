@@ -105,6 +105,27 @@ export default function AdminDashboard({ onLogout }) {
   const [subscribersSearch, setSubscribersSearch] = useState('');
   const [subscribersPage, setSubscribersPage] = useState(1);
 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setMenuSearch('');
+    setMenuCatFilter('All');
+    setMenuPage(1);
+    setGallerySearch('');
+    setGalleryCatFilter('All');
+    setGalleryPage(1);
+    setMessagesSearch('');
+    setMessagesPage(1);
+    setSubscribersSearch('');
+    setSubscribersPage(1);
+  };
+
   const token = localStorage.getItem('adminToken');
   const username = localStorage.getItem('adminUser') || 'Admin User';
 
@@ -272,31 +293,37 @@ export default function AdminDashboard({ onLogout }) {
     }
   };
 
-  const handleDeleteMenu = async (itemId) => {
-    if (!window.confirm('Are you sure you want to delete this menu item?')) return;
-    
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/menu/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+  const handleDeleteMenu = (itemId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Decimate Recipe',
+      message: 'Are you sure you want to permanently delete this recipe from the catalog?',
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/admin/menu/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
 
-      if (res.status === 401 || res.status === 403) {
-        handleAuthError();
-        return;
+          if (res.status === 401 || res.status === 403) {
+            handleAuthError();
+            return;
+          }
+
+          if (!res.ok) throw new Error('Failed to delete menu item');
+
+          toast.success('Menu item deleted successfully.');
+          fetchDashboardData();
+        } catch (err) {
+          console.error(err);
+          toast.error('Error occurred while deleting.');
+        } finally {
+          setLoading(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
       }
-
-      if (!res.ok) throw new Error('Failed to delete menu item');
-
-      toast.success('Menu item deleted successfully.');
-      fetchDashboardData();
-    } catch (err) {
-      console.error(err);
-      toast.error('Error occurred while deleting.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleAddOrEditGallery = async (e) => {
@@ -357,31 +384,37 @@ export default function AdminDashboard({ onLogout }) {
     }
   };
 
-  const handleDeleteGallery = async (itemId) => {
-    if (!window.confirm('Are you sure you want to delete this gallery item?')) return;
-    
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/gallery/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+  const handleDeleteGallery = (itemId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Discard Canvas',
+      message: 'Are you sure you want to permanently discard this canvas from the gallery?',
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/admin/gallery/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
 
-      if (res.status === 401 || res.status === 403) {
-        handleAuthError();
-        return;
+          if (res.status === 401 || res.status === 403) {
+            handleAuthError();
+            return;
+          }
+
+          if (!res.ok) throw new Error('Failed to delete gallery item');
+
+          toast.success('Gallery item deleted successfully.');
+          fetchDashboardData();
+        } catch (err) {
+          console.error(err);
+          toast.error('Error occurred while deleting gallery item.');
+        } finally {
+          setLoading(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
       }
-
-      if (!res.ok) throw new Error('Failed to delete gallery item');
-
-      toast.success('Gallery item deleted successfully.');
-      fetchDashboardData();
-    } catch (err) {
-      console.error(err);
-      toast.error('Error occurred while deleting gallery item.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const openAddGalleryModal = () => {
@@ -632,7 +665,7 @@ export default function AdminDashboard({ onLogout }) {
           <li>
             <button 
               className={`sidebar-item-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => handleTabChange('dashboard')}
             >
               <span className="sidebar-btn-icon-wrapper"><Activity size={16} /></span>
               <span className="sidebar-btn-text">Ledger Summary</span>
@@ -641,7 +674,7 @@ export default function AdminDashboard({ onLogout }) {
           <li>
             <button 
               className={`sidebar-item-btn ${activeTab === 'menu' ? 'active' : ''}`}
-              onClick={() => setActiveTab('menu')}
+              onClick={() => handleTabChange('menu')}
             >
               <span className="sidebar-btn-icon-wrapper"><Coffee size={16} /></span>
               <span className="sidebar-btn-text">Recipe Catalog</span>
@@ -650,7 +683,7 @@ export default function AdminDashboard({ onLogout }) {
           <li>
             <button 
               className={`sidebar-item-btn ${activeTab === 'messages' ? 'active' : ''}`}
-              onClick={() => setActiveTab('messages')}
+              onClick={() => handleTabChange('messages')}
             >
               <span className="sidebar-btn-icon-wrapper"><MessageSquare size={16} /></span>
               <span className="sidebar-btn-text">Guest Heartbeats</span>
@@ -660,7 +693,7 @@ export default function AdminDashboard({ onLogout }) {
           <li>
             <button 
               className={`sidebar-item-btn ${activeTab === 'subscribers' ? 'active' : ''}`}
-              onClick={() => setActiveTab('subscribers')}
+              onClick={() => handleTabChange('subscribers')}
             >
               <span className="sidebar-btn-icon-wrapper"><Users size={16} /></span>
               <span className="sidebar-btn-text">Subscribers</span>
@@ -670,7 +703,7 @@ export default function AdminDashboard({ onLogout }) {
           <li>
             <button 
               className={`sidebar-item-btn ${activeTab === 'gallery' ? 'active' : ''}`}
-              onClick={() => setActiveTab('gallery')}
+              onClick={() => handleTabChange('gallery')}
             >
               <span className="sidebar-btn-icon-wrapper"><Image size={16} /></span>
               <span className="sidebar-btn-text">Gallery Canvas</span>
@@ -1569,6 +1602,50 @@ export default function AdminDashboard({ onLogout }) {
                     </button>
                   </div>
                 </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Custom Confirmation Modal */}
+        <AnimatePresence>
+          {confirmModal.isOpen && (
+            <div className="db-modal-overlay">
+              <motion.div 
+                className="db-modal-card"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.2, cubicBezier: [0.16, 1, 0.3, 1] }}
+                style={{ maxWidth: '440px' }}
+              >
+                <div className="db-modal-header">
+                  <h3 style={{ color: 'var(--color-saffron)' }}>{confirmModal.title}</h3>
+                  <button className="db-modal-close" onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
+                    <X size={16} />
+                  </button>
+                </div>
+                <div style={{ padding: '24px 32px', color: 'var(--color-cream-malai)', fontSize: '14px', lineHeight: '1.6' }}>
+                  <p>{confirmModal.message}</p>
+                </div>
+                <div className="db-modal-actions" style={{ padding: '0 32px 32px 32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    style={{ backgroundColor: '#ffb4ab', borderColor: '#ffb4ab', color: '#000000' }}
+                    onClick={confirmModal.onConfirm}
+                    disabled={loading}
+                  >
+                    Confirm Delete
+                  </button>
+                </div>
               </motion.div>
             </div>
           )}
