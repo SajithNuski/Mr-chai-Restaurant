@@ -127,10 +127,9 @@ export default function AdminDashboard({ onLogout }) {
         handleAuthError();
         return;
       }
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
+      if (!statsRes.ok) throw new Error('Stats fetch failed');
+      const statsData = await statsRes.json();
+      setStats(statsData);
 
       // Fetch messages
       const msgRes = await fetch('/api/admin/messages', {
@@ -140,10 +139,9 @@ export default function AdminDashboard({ onLogout }) {
         handleAuthError();
         return;
       }
-      if (msgRes.ok) {
-        const msgData = await msgRes.json();
-        setMessages(msgData);
-      }
+      if (!msgRes.ok) throw new Error('Messages fetch failed');
+      const msgData = await msgRes.json();
+      setMessages(msgData);
 
       // Fetch subscribers
       const subRes = await fetch('/api/admin/subscriptions', {
@@ -153,26 +151,24 @@ export default function AdminDashboard({ onLogout }) {
         handleAuthError();
         return;
       }
-      if (subRes.ok) {
-        const subData = await subRes.json();
-        setSubscribers(subData);
-      }
+      if (!subRes.ok) throw new Error('Subscriptions fetch failed');
+      const subData = await subRes.json();
+      setSubscribers(subData);
 
       // Fetch menu items
       const menuRes = await fetch('/api/menu');
-      if (menuRes.ok) {
-        const menuData = await menuRes.json();
-        setMenuItems(menuData.length > 0 ? menuData : defaultMenuItems);
-      }
+      if (!menuRes.ok) throw new Error('Menu items fetch failed');
+      const menuData = await menuRes.json();
+      setMenuItems(menuData.length > 0 ? menuData : defaultMenuItems);
 
       // Fetch gallery items
       const galleryRes = await fetch('/api/gallery');
-      if (galleryRes.ok) {
-        const galleryData = await galleryRes.json();
-        setGalleryItems(galleryData.length > 0 ? galleryData : defaultGalleryItems);
-      }
+      if (!galleryRes.ok) throw new Error('Gallery items fetch failed');
+      const galleryData = await galleryRes.json();
+      setGalleryItems(galleryData.length > 0 ? galleryData : defaultGalleryItems);
     } catch (err) {
       console.error('Error fetching admin data, utilizing fallbacks:', err);
+      toast.error('Offline/Demo Mode: Could not connect to API server. Utilizing local fallback data.');
       // Mock fallback data for demo if server is not active
       setMessages([
         { id: '1', name: 'Aarav Mehta', email: 'aarav.mehta@example.com', subject: 'Catering Enquiry', message: 'Hello, I would like to enquire about catering for a corporate event of 50 people next month. Love your brand style!', date: new Date(Date.now() - 3600000 * 2).toISOString() },
