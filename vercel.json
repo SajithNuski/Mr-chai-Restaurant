@@ -19,8 +19,11 @@
       "dest": "api/index.js"
     },
     {
-      "src": "/((?!api/).*)",
-      "dest": "package.json"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
