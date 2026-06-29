@@ -48,48 +48,55 @@ const LOCAL_DB_PATH = process.env.VERCEL
   : path.join(__dirname, 'local_db.json');
 let useLocalDb = true; // Start in local DB fallback mode for resilience
 let dbConnectionPromise = null;
+let lastConnectionAttemptTime = 0;
+const RETRY_COOLDOWN_MS = 30000; // 30 seconds cooldown before retrying MongoDB connection after a failure
 
 // Database Connection Middleware
 const ensureDbConnection = async (req, res, next) => {
-  // Case 1: Mongoose is already connected. Verify active connection with a fast ping.
+  // Case 1: Mongoose is already connected.
   if (mongoose.connection.readyState === 1) {
+    useLocalDb = false;
+    return next();
+  }
+
+  // Case 2: Connection is in progress. Await it.
+  if (dbConnectionPromise) {
     try {
-      const pingPromise = mongoose.connection.db.command({ ping: 1 });
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Ping timeout')), 1000)
-      );
-      await Promise.race([pingPromise, timeoutPromise]);
+      await dbConnectionPromise;
       useLocalDb = false;
       return next();
-    } catch (pingErr) {
-      console.warn('[DB Middleware] Active MongoDB ping failed, falling back to local DB:', pingErr.message);
-      // Disconnect stale connection to force reconnect later
-      mongoose.disconnect().catch(() => {});
+    } catch (err) {
+      console.warn('[DB Middleware] Awaited MongoDB connection failed, using local DB:', err.message);
       useLocalDb = true;
       return next();
     }
   }
 
-  // Case 2: Mongoose is currently connecting.
-  if (mongoose.connection.readyState === 2) {
-    // Already connecting, don't block the request. Serve from local DB in the meantime.
+  // Case 3: Disconnected. Check cooldown before attempting a new connection.
+  const now = Date.now();
+  if (now - lastConnectionAttemptTime < RETRY_COOLDOWN_MS) {
     useLocalDb = true;
     return next();
   }
 
-  // Case 3: Mongoose is disconnected. Trigger background connection and serve from local DB immediately.
-  console.log('[DB Middleware] Triggering background connection to MongoDB...');
-  useLocalDb = true;
-
+  console.log('[DB Middleware] Connecting to MongoDB...');
+  lastConnectionAttemptTime = now;
   dbConnectionPromise = mongoose.connect(MONGODB_URI, {
     serverSelectionTimeoutMS: 5000
-  }).then(() => {
-    console.log('[DB Middleware] Successfully connected to MongoDB in background.');
-    useLocalDb = false;
-    seedDatabase();
-  }).catch((err) => {
-    console.error('[DB Middleware] Background MongoDB connection failed:', err.message);
   });
+
+  try {
+    await dbConnectionPromise;
+    console.log('[DB Middleware] Successfully connected to MongoDB.');
+    useLocalDb = false;
+    // Run seed in background
+    seedDatabase().catch(err => console.error('Seeding database failed:', err));
+  } catch (err) {
+    console.error('[DB Middleware] MongoDB connection failed, falling back to local DB:', err.message);
+    useLocalDb = true;
+  } finally {
+    dbConnectionPromise = null; // Clear promise so we can retry after cooldown
+  }
 
   return next();
 };
@@ -903,14 +910,18 @@ app.delete('/api/admin/gallery/:id', authenticateToken, async (req, res) => {
 // Database Connection Startup
 dbConnectionPromise = mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000
-})
+});
+
+dbConnectionPromise
   .then(() => {
     console.log('Successfully connected to MongoDB. Switching to MongoDB storage.');
     useLocalDb = false;
-    seedDatabase();
+    seedDatabase().catch(err => console.error('Seeding database failed:', err));
   })
   .catch(err => {
-    console.error('MongoDB connection error, keeping local file storage fallback:', err.message);
+    console.error('Initial MongoDB connection failed, using local DB:', err.message);
+    useLocalDb = true;
+    dbConnectionPromise = null; // Clear to allow middleware retry
   });
 
 // Start Server
