@@ -51,39 +51,47 @@ let dbConnectionPromise = null;
 
 // Database Connection Middleware
 const ensureDbConnection = async (req, res, next) => {
+  // Case 1: Mongoose is already connected. Verify active connection with a fast ping.
   if (mongoose.connection.readyState === 1) {
-    useLocalDb = false;
-    return next();
-  }
-
-  if (mongoose.connection.readyState === 2) {
-    if (dbConnectionPromise) {
-      try {
-        await dbConnectionPromise;
-        useLocalDb = false;
-      } catch (err) {
-        useLocalDb = true;
-      }
+    try {
+      const pingPromise = mongoose.connection.db.command({ ping: 1 });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Ping timeout')), 1000)
+      );
+      await Promise.race([pingPromise, timeoutPromise]);
+      useLocalDb = false;
+      return next();
+    } catch (pingErr) {
+      console.warn('[DB Middleware] Active MongoDB ping failed, falling back to local DB:', pingErr.message);
+      // Disconnect stale connection to force reconnect later
+      mongoose.disconnect().catch(() => {});
+      useLocalDb = true;
       return next();
     }
   }
 
-  console.log('[DB Middleware] Connecting to MongoDB...');
+  // Case 2: Mongoose is currently connecting.
+  if (mongoose.connection.readyState === 2) {
+    // Already connecting, don't block the request. Serve from local DB in the meantime.
+    useLocalDb = true;
+    return next();
+  }
+
+  // Case 3: Mongoose is disconnected. Trigger background connection and serve from local DB immediately.
+  console.log('[DB Middleware] Triggering background connection to MongoDB...');
+  useLocalDb = true;
+
   dbConnectionPromise = mongoose.connect(MONGODB_URI, {
     serverSelectionTimeoutMS: 5000
-  });
-
-  try {
-    await dbConnectionPromise;
-    console.log('[DB Middleware] Successfully connected to MongoDB.');
+  }).then(() => {
+    console.log('[DB Middleware] Successfully connected to MongoDB in background.');
     useLocalDb = false;
     seedDatabase();
-  } catch (err) {
-    console.error('[DB Middleware] MongoDB connection failed, utilizing local file storage fallback:', err.message);
-    useLocalDb = true;
-  } finally {
-    next();
-  }
+  }).catch((err) => {
+    console.error('[DB Middleware] Background MongoDB connection failed:', err.message);
+  });
+
+  return next();
 };
 
 app.use(ensureDbConnection);
@@ -458,15 +466,20 @@ app.post('/api/admin/login', async (req, res) => {
 // 4. Retrieve Contact Messages (Admin Protected)
 app.get('/api/admin/messages', authenticateToken, async (req, res) => {
   try {
-    if (useLocalDb) {
-      const db = readLocalDb();
-      // Sort messages descending by date
-      const sorted = [...db.messages].sort((a, b) => new Date(b.date) - new Date(a.date));
-      res.json(sorted);
-    } else {
-      const messages = await Message.find().sort({ date: -1 });
-      res.json(messages);
+    if (!useLocalDb) {
+      try {
+        const messages = await Message.find().sort({ date: -1 });
+        return res.json(messages);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB messages query failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
     }
+
+    const db = readLocalDb();
+    // Sort messages descending by date
+    const sorted = [...db.messages].sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(sorted);
   } catch (err) {
     console.error('Retrieve messages error:', err);
     res.status(500).json({ error: 'Server error. Failed to retrieve messages.' });
@@ -476,13 +489,18 @@ app.get('/api/admin/messages', authenticateToken, async (req, res) => {
 // 5. Retrieve Newsletter Subscriptions (Admin Protected)
 app.get('/api/admin/subscriptions', authenticateToken, async (req, res) => {
   try {
-    if (useLocalDb) {
-      const db = readLocalDb();
-      res.json(db.subscriptions);
-    } else {
-      const subscriptions = await Subscription.find().sort({ date: -1 });
-      res.json(subscriptions);
+    if (!useLocalDb) {
+      try {
+        const subscriptions = await Subscription.find().sort({ date: -1 });
+        return res.json(subscriptions);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB subscriptions query failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
     }
+
+    const db = readLocalDb();
+    res.json(db.subscriptions);
   } catch (err) {
     console.error('Retrieve subscriptions error:', err);
     res.status(500).json({ error: 'Server error. Failed to retrieve subscriptions.' });
@@ -492,16 +510,21 @@ app.get('/api/admin/subscriptions', authenticateToken, async (req, res) => {
 // 6. Retrieve Orders List (Admin Protected)
 app.get('/api/admin/orders', authenticateToken, async (req, res) => {
   try {
-    if (useLocalDb) {
-      const db = readLocalDb();
-      res.json(db.orders);
-    } else {
-      const orders = await Order.find().sort({ date: -1 });
-      res.json(orders);
+    if (!useLocalDb) {
+      try {
+        const orders = await Order.find().sort({ date: -1 });
+        return res.json(orders);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB orders query failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
     }
+
+    const db = readLocalDb();
+    res.json(db.orders);
   } catch (err) {
     console.error('Retrieve orders error:', err);
-    res.status(500).json({ error: 'Server error.' });
+    res.status(500).json({ error: 'Server error. Failed to retrieve orders.' });
   }
 });
 
@@ -545,6 +568,19 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
     let menuCount = 0;
     let recentOrders = [];
 
+    if (!useLocalDb) {
+      try {
+        ordersCount = await Order.countDocuments();
+        messagesCount = await Message.countDocuments();
+        subscriptionsCount = await Subscription.countDocuments();
+        menuCount = await MenuItem.countDocuments();
+        recentOrders = await Order.find().sort({ date: -1 }).limit(3);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB stats queries failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
+    }
+
     if (useLocalDb) {
       const db = readLocalDb();
       ordersCount = db.orders.length;
@@ -552,12 +588,6 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
       subscriptionsCount = db.subscriptions.length;
       menuCount = db.menu ? db.menu.length : 0;
       recentOrders = db.orders.slice(-3); // mock recent orders
-    } else {
-      ordersCount = await Order.countDocuments();
-      messagesCount = await Message.countDocuments();
-      subscriptionsCount = await Subscription.countDocuments();
-      menuCount = await MenuItem.countDocuments();
-      recentOrders = await Order.find().sort({ date: -1 }).limit(3);
     }
 
     res.json({
@@ -579,13 +609,18 @@ app.get('/api/admin/dashboard-stats', authenticateToken, async (req, res) => {
 // 9. Retrieve Menu Items (Public)
 app.get('/api/menu', async (req, res) => {
   try {
-    if (useLocalDb) {
-      const db = readLocalDb();
-      res.json(db.menu || []);
-    } else {
-      const menu = await MenuItem.find();
-      res.json(menu);
+    if (!useLocalDb) {
+      try {
+        const menu = await MenuItem.find();
+        return res.json(menu);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB menu query failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
     }
+
+    const db = readLocalDb();
+    res.json(db.menu || []);
   } catch (err) {
     console.error('Retrieve menu error:', err);
     res.status(500).json({ error: 'Server error. Failed to retrieve menu.' });
@@ -710,17 +745,52 @@ app.delete('/api/admin/menu/:id', authenticateToken, async (req, res) => {
 // 13. Retrieve Gallery Items (Public)
 app.get('/api/gallery', async (req, res) => {
   try {
-    if (useLocalDb) {
-      const db = readLocalDb();
-      res.json(db.gallery || []);
-    } else {
-      const gallery = await GalleryItem.find().sort({ date: 1 });
-      res.json(gallery);
+    if (!useLocalDb) {
+      try {
+        const gallery = await GalleryItem.find().sort({ date: 1 });
+        return res.json(gallery);
+      } catch (dbErr) {
+        console.warn('[API] MongoDB gallery query failed, falling back to local DB:', dbErr.message);
+        useLocalDb = true;
+      }
     }
+
+    const db = readLocalDb();
+    res.json(db.gallery || []);
   } catch (err) {
     console.error('Retrieve gallery error:', err);
     res.status(500).json({ error: 'Server error. Failed to retrieve gallery.' });
   }
+});
+
+// 17. Retrieve Reviews (Public - fallback for google reviews API)
+app.get('/api/reviews', async (req, res) => {
+  res.json([
+    {
+      author_name: "Aarav Mehta",
+      author_url: "https://www.google.com/maps/contrib/1122334455",
+      profile_photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80",
+      rating: 5,
+      relative_time_description: "a week ago",
+      text: "The contrast between the street energy and the high-end presentation is incredible. Best chai in the city, hands down. Truly a culinary revelation."
+    },
+    {
+      author_name: "Sarah Jenkins",
+      author_url: "https://www.google.com/maps/contrib/2233445566",
+      profile_photo_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100&q=80",
+      rating: 5,
+      relative_time_description: "3 weeks ago",
+      text: "Finally, a place that treats street food with the respect it deserves. The Emperor Burger is a masterpiece of textures and spices."
+    },
+    {
+      author_name: "Kabir Singh",
+      author_url: "https://www.google.com/maps/contrib/3344556677",
+      profile_photo_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80",
+      rating: 5,
+      relative_time_description: "2 months ago",
+      text: "Atmosphere 10/10. Flavor 10/10. It's like eating in a luxury heritage lounge but with the fiery, authentic soul of the bazaar."
+    }
+  ]);
 });
 
 // 14. Add a Gallery Item (Admin Protected)
