@@ -8,15 +8,15 @@
     },
     {
       "source": "/assets/:path*",
-      "destination": "/public/assets/:path*"
+      "destination": "/frontend/dist/assets/:path*"
     },
     {
       "source": "/(favicon.svg|icons.svg|vite.svg|logo.png)",
-      "destination": "/public/$1"
+      "destination": "/frontend/dist/$1"
     },
     {
       "source": "/((?!api/).*)",
-      "destination": "/public/index.html"
+      "destination": "/frontend/dist/index.html"
     }
   ]
 }
